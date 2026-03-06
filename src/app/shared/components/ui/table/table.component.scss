@@ -1,0 +1,39 @@
+@import 'styles/variables';
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: $shadow-sm;
+
+  thead {
+    background-color: $primary-color;
+    color: white;
+
+    th {
+      padding: $spacing-md;
+      text-align: left;
+      font-weight: 600;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $border-color;
+      cursor: pointer;
+      transition: $transition-fast;
+
+      &:hover {
+        background-color: $background-color;
+      }
+
+      td {
+        padding: $spacing-md;
+      }
+    }
+  }
+}

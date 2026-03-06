@@ -1,0 +1,23 @@
+<div class="stock-alert-container">
+  <h1>Alertas de Stock Bajo</h1>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <div *ngIf="!loading && lowStockItems.length === 0" class="no-alerts">
+    <p>No hay productos con stock bajo</p>
+  </div>
+
+  <div *ngIf="!loading && lowStockItems.length > 0" class="alerts-list">
+    <div *ngFor="let item of lowStockItems" class="alert-card">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <h3>{{ item.name }}</h3>
+        <p>SKU: {{ item.sku }}</p>
+        <p>Stock actual: {{ item.quantity }} / Mínimo: {{ item.minStock }}</p>
+      </div>
+      <app-button variant="primary" (clicked)="viewItem(item)">
+        Ver Detalle
+      </app-button>
+    </div>
+  </div>
+</div>

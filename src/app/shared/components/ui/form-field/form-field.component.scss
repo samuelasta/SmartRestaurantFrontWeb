@@ -1,0 +1,23 @@
+@import 'styles/variables';
+
+.form-field {
+  margin-bottom: $spacing-md;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-weight: 500;
+    color: $text-color;
+
+    .required {
+      color: $danger-color;
+    }
+  }
+
+  .error-message {
+    display: block;
+    margin-top: $spacing-xs;
+    color: $danger-color;
+    font-size: 12px;
+  }
+}

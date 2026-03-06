@@ -1,0 +1,21 @@
+@import 'styles/variables';
+
+.inventory-list-container {
+  padding: $spacing-lg;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+
+    h1 {
+      margin: 0;
+      color: $primary-color;
+    }
+  }
+
+  .filters {
+    margin-bottom: $spacing-md;
+  }
+}

@@ -1,0 +1,59 @@
+@import 'styles/variables';
+
+.stock-alert-container {
+  padding: $spacing-lg;
+
+  h1 {
+    margin-bottom: $spacing-lg;
+    color: $primary-color;
+  }
+
+  .no-alerts {
+    text-align: center;
+    padding: $spacing-xl;
+    background: white;
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-sm;
+
+    p {
+      color: $text-light;
+      font-size: 16px;
+    }
+  }
+
+  .alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .alert-card {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      background: white;
+      border-radius: $border-radius-md;
+      box-shadow: $shadow-sm;
+      padding: $spacing-md;
+      border-left: 4px solid $warning-color;
+
+      .alert-icon {
+        font-size: 32px;
+      }
+
+      .alert-content {
+        flex: 1;
+
+        h3 {
+          margin: 0 0 $spacing-xs 0;
+          color: $primary-color;
+        }
+
+        p {
+          margin: $spacing-xs 0;
+          color: $text-light;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}

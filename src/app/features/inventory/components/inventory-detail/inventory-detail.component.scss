@@ -1,0 +1,50 @@
+@import 'styles/variables';
+
+.inventory-detail-container {
+  padding: $spacing-lg;
+
+  .detail-card {
+    background: white;
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-md;
+    padding: $spacing-lg;
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-lg;
+      padding-bottom: $spacing-md;
+      border-bottom: 1px solid $border-color;
+
+      h1 {
+        margin: 0;
+        color: $primary-color;
+      }
+
+      .actions {
+        display: flex;
+        gap: $spacing-sm;
+      }
+    }
+
+    .detail-content {
+      .detail-row {
+        display: flex;
+        padding: $spacing-sm 0;
+        border-bottom: 1px solid $border-color;
+
+        .label {
+          font-weight: 600;
+          width: 200px;
+          color: $text-color;
+        }
+
+        .value {
+          flex: 1;
+          color: $text-light;
+        }
+      }
+    }
+  }
+}

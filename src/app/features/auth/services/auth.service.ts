@@ -1,0 +1,215 @@
+import { Injectable } from '@angular/core';
+import { Observable, tap, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { HttpClientService } from '@core/services/http-client.service';
+import { StorageService } from '@core/services/storage.service';
+import { LoginRequest } from '../models/login-request.model';
+import { RegisterRequest } from '../models/register-request.model';
+import { AuthResponse } from '../models/auth-response.model';
+import { VerifyRequest } from '../models/verify-request.model';
+import { ResetPasswordRequest } from '../models/reset-password-request.model';
+import { ChangePasswordRequest } from '../models/change-password-request.model';
+import { SocialLoginRequest } from '../models/social-login-request.model';
+import { User } from '../models/user.model';
+import { RegisterEmployeeRequest } from '../models/register-employee-request.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+
+  constructor(
+    private httpClient: HttpClientService,
+    private storageService: StorageService
+  ) {}
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AUTENTICACIÓN BÁSICA
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Login con email y contraseña
+   * Puede requerir 2FA si está habilitado
+   */
+  login(credentials: LoginRequest): Observable<AuthResponse> {
+    return this.httpClient.post<AuthResponse>('/auth/login', credentials).pipe(
+      tap(response => {
+        if (!response.is2faRequired) {
+          this.handleSuccessfulAuth(response);
+        }
+      })
+    );
+  }
+
+  /**
+   * Verificación 2FA después del login
+   */
+  verify2fa(request: VerifyRequest): Observable<AuthResponse> {
+    return this.httpClient.post<AuthResponse>('/auth/verify-2fa', request).pipe(
+      tap(response => this.handleSuccessfulAuth(response))
+    );
+  }
+
+  /**
+   * Registro público (solo para CUSTOMER)
+   */
+  register(data: RegisterRequest): Observable<string> {
+    return this.httpClient.post<string>('/auth/register', data);
+  }
+
+  /**
+   * Verificación de email después del registro
+   */
+  verifyEmail(request: VerifyRequest): Observable<string> {
+    return this.httpClient.post<string>('/auth/verify-email', request);
+  }
+
+  /**
+   * Cierre de sesión
+   */
+  logout(): Observable<string> {
+    const refreshToken = this.storageService.getRefreshToken();
+    return this.httpClient.post<string>('/auth/logout', { refreshToken }).pipe(
+      tap(() => {
+        this.storageService.clearAll();
+      }),
+      catchError(() => {
+        // Limpiar storage incluso si falla la petición
+        this.storageService.clearAll();
+        return of('Sesión cerrada localmente');
+      })
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RECUPERACIÓN DE CONTRASEÑA
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Solicitar código de recuperación de contraseña
+   */
+  forgotPassword(email: string): Observable<string> {
+    return this.httpClient.post<string>('/auth/forgot-password', { email });
+  }
+
+  /**
+   * Restablecer contraseña con código OTP
+   */
+  resetPassword(request: ResetPasswordRequest): Observable<string> {
+    return this.httpClient.post<string>('/auth/reset-password', request);
+  }
+
+  /**
+   * Solicitar cambio de contraseña voluntario (envía OTP)
+   */
+  requestPasswordChange(email: string): Observable<string> {
+    return this.httpClient.post<string>('/auth/request-password-change', { email });
+  }
+
+  /**
+   * Cambiar contraseña (requiere contraseña actual y OTP)
+   */
+  changePassword(request: ChangePasswordRequest): Observable<string> {
+    return this.httpClient.post<string>('/auth/change-password', request);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GESTIÓN DE TOKENS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Refrescar access token usando refresh token
+   */
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.storageService.getRefreshToken();
+    return this.httpClient.post<AuthResponse>('/auth/refresh-token', { refreshToken }).pipe(
+      tap(response => {
+        this.storageService.setToken(response.accessToken);
+        if (response.refreshToken) {
+          this.storageService.setRefreshToken(response.refreshToken);
+        }
+      })
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DESBLOQUEO DE CUENTA
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Desbloquear cuenta con código OTP
+   */
+  unlockAccount(request: VerifyRequest): Observable<string> {
+    return this.httpClient.post<string>('/auth/unlock-account', request);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SOCIAL LOGIN (PENDIENTE DE IMPLEMENTACIÓN EN BACKEND)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Login/Registro con proveedor social (Google, Facebook, GitHub)
+   * NOTA: Este endpoint debe ser implementado en el backend
+   */
+  socialLogin(request: SocialLoginRequest): Observable<AuthResponse> {
+    return this.httpClient.post<AuthResponse>('/auth/social-login', request).pipe(
+      tap(response => this.handleSuccessfulAuth(response))
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // REGISTRO DE EMPLEADOS (SOLO ADMIN)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Registro de empleados por administrador
+   * Requiere rol ADMIN
+   */
+  registerEmployee(data: RegisterEmployeeRequest): Observable<string> {
+    return this.httpClient.post<string>('/admin/register-employee', data);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OBTENER INFORMACIÓN DEL USUARIO ACTUAL
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Obtener información del usuario actual
+   * NOTA: Este endpoint debe ser implementado en el backend
+   */
+  getCurrentUser(): Observable<User> {
+    return this.httpClient.get<User>('/auth/me');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // UTILIDADES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Verifica si el usuario está autenticado
+   */
+  isAuthenticated(): boolean {
+    return !!this.storageService.getToken();
+  }
+
+  /**
+   * Obtiene el rol del usuario actual
+   */
+  getUserRole(): string {
+    return this.storageService.getUserRole();
+  }
+
+  /**
+   * Maneja la autenticación exitosa guardando tokens
+   */
+  private handleSuccessfulAuth(response: AuthResponse): void {
+    this.storageService.setToken(response.accessToken);
+    this.storageService.setRefreshToken(response.refreshToken);
+    
+    // Guardar flags importantes
+    if (response.requiresPasswordChange) {
+      this.storageService.setItem('requiresPasswordChange', 'true');
+    }
+  }
+}
+

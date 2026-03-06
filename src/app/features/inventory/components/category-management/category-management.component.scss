@@ -1,0 +1,45 @@
+@import 'styles/variables';
+
+.category-management-container {
+  padding: $spacing-lg;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-lg;
+
+    h1 {
+      margin: 0;
+      color: $primary-color;
+    }
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-md;
+
+    .category-card {
+      background: white;
+      border-radius: $border-radius-md;
+      box-shadow: $shadow-sm;
+      padding: $spacing-md;
+
+      h3 {
+        margin: 0 0 $spacing-sm 0;
+        color: $primary-color;
+      }
+
+      p {
+        color: $text-light;
+        margin-bottom: $spacing-md;
+      }
+
+      .card-actions {
+        display: flex;
+        gap: $spacing-sm;
+      }
+    }
+  }
+}

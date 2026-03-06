@@ -1,0 +1,49 @@
+<div class="inventory-detail-container">
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <div *ngIf="!loading && item" class="detail-card">
+    <div class="header">
+      <h1>{{ item.name }}</h1>
+      <div class="actions">
+        <app-button variant="secondary" (clicked)="editItem()">Editar</app-button>
+        <app-button variant="danger" (clicked)="deleteItem()">Eliminar</app-button>
+        <app-button variant="primary" (clicked)="goBack()">Volver</app-button>
+      </div>
+    </div>
+
+    <div class="detail-content">
+      <div class="detail-row">
+        <span class="label">SKU:</span>
+        <span class="value">{{ item.sku }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Descripción:</span>
+        <span class="value">{{ item.description }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Categoría:</span>
+        <span class="value">{{ item.category.name }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Cantidad:</span>
+        <span class="value">{{ item.quantity }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Stock Mínimo:</span>
+        <span class="value">{{ item.minStock }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Precio Unitario:</span>
+        <span class="value">{{ item.unitPrice | currencyFormat }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Proveedor:</span>
+        <span class="value">{{ item.supplier }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">Ubicación:</span>
+        <span class="value">{{ item.location }}</span>
+      </div>
+    </div>
+  </div>
+</div>

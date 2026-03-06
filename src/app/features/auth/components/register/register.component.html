@@ -1,0 +1,38 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Crear Cuenta</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <app-form-field label="Nombre" [required]="true">
+        <input type="text" formControlName="firstName" placeholder="Juan">
+      </app-form-field>
+
+      <app-form-field label="Apellido" [required]="true">
+        <input type="text" formControlName="lastName" placeholder="Pérez">
+      </app-form-field>
+
+      <app-form-field label="Correo Electrónico" [required]="true">
+        <input type="email" formControlName="email" placeholder="correo@ejemplo.com">
+      </app-form-field>
+
+      <app-form-field label="Contraseña" [required]="true">
+        <input type="password" formControlName="password" placeholder="********">
+      </app-form-field>
+
+      <app-form-field label="Confirmar Contraseña" [required]="true">
+        <input type="password" formControlName="confirmPassword" placeholder="********">
+      </app-form-field>
+
+      <app-button 
+        type="submit" 
+        variant="primary" 
+        [disabled]="registerForm.invalid"
+        [loading]="loading">
+        Registrarse
+      </app-button>
+    </form>
+
+    <div class="auth-links">
+      <a routerLink="/auth/login">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </div>
+</div>

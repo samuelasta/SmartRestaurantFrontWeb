@@ -1,0 +1,51 @@
+@import 'styles/variables';
+
+.inventory-form-container {
+  padding: $spacing-lg;
+  max-width: 800px;
+  margin: 0 auto;
+
+  .form-card {
+    background: white;
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-md;
+    padding: $spacing-lg;
+
+    h2 {
+      margin-bottom: $spacing-lg;
+      color: $primary-color;
+    }
+
+    form {
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: $spacing-md;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        padding: $spacing-sm;
+        border: 1px solid $border-color;
+        border-radius: $border-radius-sm;
+        font-size: 14px;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+        }
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: $spacing-sm;
+        margin-top: $spacing-lg;
+      }
+    }
+  }
+}

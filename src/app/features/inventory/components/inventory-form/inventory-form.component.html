@@ -1,0 +1,73 @@
+<div class="inventory-form-container">
+  <div class="form-card">
+    <h2>{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+
+    <form [formGroup]="inventoryForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <app-form-field label="Nombre" [required]="true">
+          <input type="text" formControlName="name" placeholder="Nombre del producto">
+        </app-form-field>
+
+        <app-form-field label="SKU" [required]="true">
+          <input type="text" formControlName="sku" placeholder="SKU-001">
+        </app-form-field>
+      </div>
+
+      <app-form-field label="Descripción" [required]="true">
+        <textarea formControlName="description" rows="3" placeholder="Descripción del producto"></textarea>
+      </app-form-field>
+
+      <div class="form-row">
+        <app-form-field label="Categoría" [required]="true">
+          <select formControlName="categoryId">
+            <option value="">Seleccionar categoría</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </app-form-field>
+
+        <app-form-field label="Cantidad" [required]="true">
+          <input type="number" formControlName="quantity" placeholder="0">
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="Stock Mínimo" [required]="true">
+          <input type="number" formControlName="minStock" placeholder="0">
+        </app-form-field>
+
+        <app-form-field label="Stock Máximo" [required]="true">
+          <input type="number" formControlName="maxStock" placeholder="0">
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="Precio Unitario" [required]="true">
+          <input type="number" formControlName="unitPrice" placeholder="0.00">
+        </app-form-field>
+
+        <app-form-field label="Proveedor" [required]="true">
+          <input type="text" formControlName="supplier" placeholder="Nombre del proveedor">
+        </app-form-field>
+      </div>
+
+      <app-form-field label="Ubicación" [required]="true">
+        <input type="text" formControlName="location" placeholder="Bodega A - Estante 1">
+      </app-form-field>
+
+      <div class="form-actions">
+        <app-button type="button" variant="secondary" (clicked)="cancel()">
+          Cancelar
+        </app-button>
+        <app-button 
+          type="submit" 
+          variant="primary" 
+          [disabled]="inventoryForm.invalid"
+          [loading]="loading">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Verificar Cuenta</h2>
+    <p class="info-text">Ingresa el código de verificación enviado a tu correo</p>
+    
+    <form [formGroup]="verifyForm" (ngSubmit)="onSubmit()">
+      <app-form-field label="Correo Electrónico" [required]="true">
+        <input type="email" formControlName="email" placeholder="correo@ejemplo.com">
+      </app-form-field>
+
+      <app-form-field label="Código de Verificación" [required]="true">
+        <input type="text" formControlName="otp" placeholder="123456" maxlength="6">
+      </app-form-field>
+
+      <app-button 
+        type="submit" 
+        variant="primary" 
+        [disabled]="verifyForm.invalid"
+        [loading]="loading">
+        Verificar
+      </app-button>
+    </form>
+
+    <div class="auth-links">
+      <a routerLink="/auth/login">Volver al inicio de sesión</a>
+    </div>
+  </div>
+</div>

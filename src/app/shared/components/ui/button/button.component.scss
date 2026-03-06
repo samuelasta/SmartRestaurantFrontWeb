@@ -1,0 +1,33 @@
+@import 'styles/variables';
+@import 'styles/mixins';
+
+.btn {
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: $transition-fast;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &-primary {
+    @include button-variant($primary-color);
+  }
+
+  &-secondary {
+    @include button-variant($secondary-color);
+  }
+
+  &-danger {
+    @include button-variant($danger-color);
+  }
+
+  &-success {
+    @include button-variant($success-color);
+  }
+}

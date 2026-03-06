@@ -1,0 +1,21 @@
+<div class="category-management-container">
+  <div class="header">
+    <h1>Gestión de Categorías</h1>
+    <app-button variant="primary">Agregar Categoría</app-button>
+  </div>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <div *ngIf="!loading" class="categories-grid">
+    <div *ngFor="let category of categories" class="category-card">
+      <h3>{{ category.name }}</h3>
+      <p>{{ category.description }}</p>
+      <div class="card-actions">
+        <app-button variant="secondary" size="small">Editar</app-button>
+        <app-button variant="danger" size="small" (clicked)="deleteCategory(category.id)">
+          Eliminar
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>
