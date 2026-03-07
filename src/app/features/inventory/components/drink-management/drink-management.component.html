@@ -1,0 +1,142 @@
+<div class="drink-management-container">
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Gestión de Bebidas</h1>
+        <p>Administra las bebidas del inventario</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar Bebida
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="drinks.length > 0" class="drinks-grid">
+      <div *ngFor="let drink of drinks" class="drink-card" (click)="viewDrinkDetail(drink.id)">
+        <div class="drink-image">
+          <ng-container *ngIf="drink.photo; else noImage">
+            <img [src]="drink.photo" [alt]="drink.name" (error)="onImageError($event)">
+          </ng-container>
+          <ng-template #noImage>
+            <div class="placeholder-image">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                <line x1="6" y1="1" x2="6" y2="4"></line>
+                <line x1="10" y1="1" x2="10" y2="4"></line>
+                <line x1="14" y1="1" x2="14" y2="4"></line>
+              </svg>
+              <span>Sin imagen</span>
+            </div>
+          </ng-template>
+          <span class="alcohol-badge" *ngIf="drink.alcohol">🍺 Alcohol</span>
+        </div>
+        
+        <div class="drink-info">
+          <h3 class="drink-name">{{ drink.name }}</h3>
+          <div class="drink-details">
+            <span class="detail-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+              </svg>
+              {{ drink.mililiters }}ml
+            </span>
+            <span class="detail-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              {{ drink.units }} unidades
+            </span>
+          </div>
+          <div class="drink-actions" (click)="$event.stopPropagation()">
+            <button class="action-btn edit" (click)="openEditModal(drink.id)" title="Editar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="action-btn delete" (click)="deleteDrink(drink.id)" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="drinks.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+        <line x1="6" y1="1" x2="6" y2="4"></line>
+        <line x1="10" y1="1" x2="10" y2="4"></line>
+        <line x1="14" y1="1" x2="14" y2="4"></line>
+      </svg>
+      <h3>{{ currentPage > 1 ? 'No hay bebidas en esta página' : 'No hay bebidas' }}</h3>
+      <p>{{ currentPage > 1 ? 'Intenta volver a la página anterior' : 'Comienza agregando tu primera bebida al inventario' }}</p>
+      <div class="empty-actions">
+        <app-button 
+          variant="secondary" 
+          *ngIf="currentPage > 1"
+          (clicked)="previousPage()">
+          ← Página anterior
+        </app-button>
+        <app-button 
+          variant="primary" 
+          *ngIf="currentPage === 1"
+          (clicked)="openCreateModal()">
+          Agregar bebida
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer con paginación -->
+  <footer class="page-footer" *ngIf="!loading && drinks.length > 0">
+    <div class="pagination">
+      <app-button 
+        variant="secondary" 
+        size="small" 
+        [disabled]="currentPage === 1"
+        (clicked)="previousPage()">
+        ← Anterior
+      </app-button>
+      <span class="page-info">Página <strong>{{ currentPage }}</strong></span>
+      <app-button 
+        variant="secondary" 
+        size="small"
+        [disabled]="!hasMorePages"
+        (clicked)="nextPage()">
+        Siguiente →
+      </app-button>
+    </div>
+  </footer>
+
+  <!-- Modal de formulario -->
+  <app-drink-form-modal
+    [isOpen]="isModalOpen"
+    [drinkId]="selectedDrinkId"
+    (closeModal)="closeModal()"
+    (drinkSaved)="onDrinkSaved()">
+  </app-drink-form-modal>
+</div>

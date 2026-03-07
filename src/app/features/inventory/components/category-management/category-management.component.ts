@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CategoryService } from '../../services/category.service';
-import { Category } from '../../models/category.model';
+import { CategoryResponse } from '../../models/category.model';
 import { NotificationService } from '@core/services/notification.service';
 
 @Component({
@@ -9,37 +10,73 @@ import { NotificationService } from '@core/services/notification.service';
   styleUrls: ['./category-management.component.scss']
 })
 export class CategoryManagementComponent implements OnInit {
-  categories: Category[] = [];
+  categories: CategoryResponse[] = [];
   loading = false;
+  isModalOpen = false;
+  selectedCategoryId: string | null = null;
 
   constructor(
     private categoryService: CategoryService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
   }
 
+  navigateToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
   loadCategories(): void {
     this.loading = true;
-    this.categoryService.getAll().subscribe({
-      next: (categories) => {
-        this.categories = categories;
+    this.categoryService.getAllCategories().subscribe({
+      next: (response) => {
+        if (!response.error) {
+          this.categories = response.message as CategoryResponse[];
+        }
         this.loading = false;
       },
       error: () => {
         this.loading = false;
+        this.notificationService.showError('Error al cargar las categorías');
       }
     });
   }
 
-  deleteCategory(id: number): void {
+  openCreateModal(): void {
+    this.selectedCategoryId = null;
+    this.isModalOpen = true;
+  }
+
+  openEditModal(id: string): void {
+    this.selectedCategoryId = id;
+    this.isModalOpen = true;
+  }
+
+  closeModal(): void {
+    this.isModalOpen = false;
+    this.selectedCategoryId = null;
+  }
+
+  onCategorySaved(): void {
+    this.loadCategories();
+  }
+
+  deleteCategory(id: string): void {
     if (confirm('¿Está seguro de eliminar esta categoría?')) {
-      this.categoryService.delete(id).subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Categoría eliminada exitosamente');
-          this.loadCategories();
+      this.categoryService.deleteCategory(id).subscribe({
+        next: (response) => {
+          if (!response.error) {
+            this.notificationService.showSuccess('Categoría eliminada exitosamente');
+            this.loadCategories();
+          } else {
+            this.notificationService.showError(response.message as string);
+          }
+        },
+        error: (error) => {
+          this.notificationService.showError('Error al eliminar la categoría');
         }
       });
     }

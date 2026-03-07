@@ -1,0 +1,70 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="close()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
+      <button class="close-button" (click)="close()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body">
+        <app-loading-spinner *ngIf="loading" size="medium"></app-loading-spinner>
+
+        <div class="form-group" *ngIf="!loading">
+          <label for="name">Nombre <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Ej: Entradas, Platos Fuertes, Postres"
+            [class.error]="name?.invalid && name?.touched"
+          />
+          <div class="error-message" *ngIf="name?.invalid && name?.touched">
+            <span *ngIf="name?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="name?.errors?.['minlength']">Mínimo 1 carácter</span>
+            <span *ngIf="name?.errors?.['maxlength']">Máximo 100 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="!loading">
+          <label for="description">Descripción <span class="required">*</span></label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="4"
+            placeholder="Describe la categoría (mínimo 10 caracteres)"
+            [class.error]="description?.invalid && description?.touched"
+          ></textarea>
+          <div class="error-message" *ngIf="description?.invalid && description?.touched">
+            <span *ngIf="description?.errors?.['required']">La descripción es requerida</span>
+            <span *ngIf="description?.errors?.['minlength']">Mínimo 10 caracteres</span>
+            <span *ngIf="description?.errors?.['maxlength']">Máximo 500 caracteres</span>
+          </div>
+          <div class="char-counter">
+            {{ description?.value?.length || 0 }} / 500
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <app-button 
+          variant="secondary" 
+          type="button"
+          (clicked)="close()"
+          [disabled]="loading">
+          Cancelar
+        </app-button>
+        <app-button 
+          variant="primary" 
+          type="submit"
+          [disabled]="loading || categoryForm.invalid">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

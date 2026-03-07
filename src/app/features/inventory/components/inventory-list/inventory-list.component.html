@@ -1,21 +1,123 @@
 <div class="inventory-list-container">
-  <div class="header">
-    <h1>Inventario</h1>
-    <app-button variant="primary" (clicked)="navigateToNew()">
-      Agregar Producto
-    </app-button>
-  </div>
-
-  <div class="filters">
-    <!-- Filtros aquí -->
-  </div>
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Inventario de Productos</h1>
+        <p>Gestiona todos los productos de tu inventario</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="navigateToNew()">
+          Agregar Producto
+        </app-button>
+      </div>
+    </div>
+  </header>
 
   <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
 
-  <app-table 
-    *ngIf="!loading"
-    [columns]="columns" 
-    [data]="inventoryItems"
-    (rowClicked)="onRowClick($event)">
-  </app-table>
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <!-- Grid de productos -->
+    <div class="products-grid" *ngIf="products.length > 0">
+      <div 
+        class="product-card" 
+        *ngFor="let product of products"
+        (click)="onRowClick(product)">
+        
+        <div class="product-image">
+          <ng-container *ngIf="product.photo; else noImage">
+            <img 
+              [src]="product.photo" 
+              [alt]="product.name"
+              (error)="onImageError($event)">
+          </ng-container>
+          <ng-template #noImage>
+            <div class="placeholder-image">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span>Sin imagen</span>
+            </div>
+          </ng-template>
+          <span class="product-state" [class.active]="product.state === 'ACTIVE'">
+            {{ product.state === 'ACTIVE' ? '✓ Activo' : '✗ Inactivo' }}
+          </span>
+        </div>
+        
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-price">{{ product.price | currency }}</p>
+          <div class="product-details">
+            <span class="detail-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              {{ product.weight }} g
+            </span>
+            <span class="detail-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+              Min: {{ product.minimumStock }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="products.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <h3>{{ currentPage > 1 ? 'No hay productos en esta página' : 'No hay productos' }}</h3>
+      <p>{{ currentPage > 1 ? 'Intenta volver a la página anterior' : 'Comienza agregando tu primer producto al inventario' }}</p>
+      <div class="empty-actions">
+        <app-button 
+          variant="secondary" 
+          *ngIf="currentPage > 1"
+          (clicked)="previousPage()">
+          ← Página anterior
+        </app-button>
+        <app-button 
+          variant="primary" 
+          *ngIf="currentPage === 1"
+          (clicked)="navigateToNew()">
+          Agregar producto
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer con paginación -->
+  <footer class="page-footer" *ngIf="!loading && products.length > 0">
+    <div class="pagination">
+      <app-button 
+        variant="secondary" 
+        size="small" 
+        [disabled]="currentPage === 1"
+        (clicked)="previousPage()">
+        ← Anterior
+      </app-button>
+      <span class="page-info">Página <strong>{{ currentPage }}</strong></span>
+      <app-button 
+        variant="secondary" 
+        size="small"
+        [disabled]="!hasMorePages"
+        (clicked)="nextPage()">
+        Siguiente →
+      </app-button>
+    </div>
+  </footer>
 </div>

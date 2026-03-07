@@ -57,20 +57,42 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.loading = true;
       this.authService.login(this.loginForm.value).subscribe({
-        next: (response) => {
-          if (response.is2faRequired) {
+        next: (response: any) => {
+          console.log('Login response:', response);
+          
+          // Primero verificar si requiere 2FA
+          // El backend devuelve '2faRequired' (no 'is2faRequired')
+          const requires2FA = response && (response.is2faRequired === true || response['2faRequired'] === true);
+          
+          if (requires2FA) {
             // Requiere verificación 2FA
             this.requires2FA = true;
             this.pendingEmail = this.loginForm.value.email;
             this.loading = false;
             this.notificationService.showInfo('Por favor ingrese el código de verificación enviado a su correo');
-          } else {
-            // Login exitoso
+          } else if (response && response.accessToken) {
+            // Login exitoso sin 2FA
             this.handleSuccessfulLogin(response);
+          } else if (response && response.accessToken === null && response.is2faRequired === false) {
+            // Caso inesperado - acceso denegado o credenciales incorrectas
+            this.loading = false;
+            this.notificationService.showError('Credenciales incorrectas');
+          } else {
+            // Respuesta inesperada
+            this.loading = false;
+            console.log('Login response inesperada:', response);
           }
         },
         error: (error) => {
           this.loading = false;
+          console.log('Login error:', error);
+          // Verificar si el backend indica que requiere verificación en el error
+          const errorResponse = error?.error;
+          if (errorResponse && (errorResponse.is2faRequired === true || errorResponse.requiresVerification === true)) {
+            this.requires2FA = true;
+            this.pendingEmail = this.loginForm.value.email;
+            this.notificationService.showInfo('Por favor ingrese el código de verificación enviado a su correo');
+          }
           // El error ya es manejado por el interceptor
         }
       });
@@ -97,6 +119,10 @@ export class LoginComponent implements OnInit {
   }
 
   handleSuccessfulLogin(response: any): void {
+    // Guardar tokens primero
+    this.storageService.setToken(response.accessToken);
+    this.storageService.setRefreshToken(response.refreshToken);
+    
     this.notificationService.showSuccess('Inicio de sesión exitoso');
     
     // Obtener información del usuario actual
@@ -117,8 +143,15 @@ export class LoginComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        // Si falla obtener el usuario, redirigir a una ruta por defecto
-        this.router.navigate(['/']);
+        // Si falla obtener el usuario, aún así redirigir
+        if (this.returnUrl) {
+          this.router.navigateByUrl(this.returnUrl);
+        } else {
+          this.roleRedirectService.redirectByRole(
+            'ADMIN' as UserRole, // Por defecto
+            response.requiresPasswordChange
+          );
+        }
         this.loading = false;
       }
     });

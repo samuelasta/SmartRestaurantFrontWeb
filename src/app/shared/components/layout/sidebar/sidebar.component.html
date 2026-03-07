@@ -1,5 +1,21 @@
 <aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>Menú</h2>
+  </div>
   <nav class="sidebar-nav">
-    <!-- Sidebar navigation items -->
+    <div *ngFor="let section of getVisibleSections()" class="nav-section">
+      <h3 class="nav-section-title">{{ section.title }}</h3>
+      <ul class="nav-list">
+        <li *ngFor="let item of section.items" class="nav-item">
+          <a 
+            (click)="navigateTo(item.route)" 
+            [class.active]="isActive(item.route)"
+            class="nav-link">
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </nav>
 </aside>

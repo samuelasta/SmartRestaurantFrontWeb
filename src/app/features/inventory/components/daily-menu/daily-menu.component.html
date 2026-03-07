@@ -1,0 +1,132 @@
+<div class="daily-menu-container">
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Menú del Día</h1>
+        <p>Gestiona los platos del menú diario</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="openAddModal()">
+          Agregar Plato al Menú
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="dailyMenuDishes.length > 0" class="menu-grid">
+      <div *ngFor="let dish of dailyMenuDishes" class="menu-card" (click)="viewDishDetail(dish.id)">
+        <div class="dish-image">
+          <ng-container *ngIf="dish.photo; else noImage">
+            <img [src]="dish.photo" [alt]="dish.name" (error)="onImageError($event)">
+          </ng-container>
+          <ng-template #noImage>
+            <div class="placeholder-image">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+                <path d="M7 2v20"></path>
+                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
+              </svg>
+              <span>Sin imagen</span>
+            </div>
+          </ng-template>
+          <div class="menu-badge">Menú del Día</div>
+        </div>
+        
+        <div class="dish-info">
+          <h3 class="dish-name">{{ dish.name }}</h3>
+          <p class="dish-price">{{ dish.price }}</p>
+          <div class="dish-actions" (click)="$event.stopPropagation()">
+            <app-button variant="danger" size="small" (clicked)="removeDishFromMenu(dish.id)">
+              Quitar del menú
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="dailyMenuDishes.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
+        <path d="M7 2v20"></path>
+        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
+      </svg>
+      <h3>No hay platos en el menú</h3>
+      <p>Comienza agregando platos al menú del día</p>
+      <div class="empty-actions">
+        <app-button variant="primary" (clicked)="openAddModal()">
+          Agregar primer plato
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer con paginación -->
+  <footer class="page-footer" *ngIf="!loading && dailyMenuDishes.length > 0">
+    <div class="pagination">
+      <app-button 
+        variant="secondary" 
+        size="small" 
+        [disabled]="currentPage === 1"
+        (clicked)="previousPage()">
+        ← Anterior
+      </app-button>
+      <span class="page-info">Página <strong>{{ currentPage }}</strong></span>
+      <app-button 
+        variant="secondary" 
+        size="small"
+        [disabled]="!hasMorePages"
+        (clicked)="nextPage()">
+        Siguiente →
+      </app-button>
+    </div>
+  </footer>
+
+  <!-- Modal para agregar platos -->
+  <div class="modal-overlay" *ngIf="isAddModalOpen" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Agregar Plato al Menú del Día</h2>
+        <button class="close-btn" (click)="closeAddModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <app-loading-spinner *ngIf="loadingAvailable" size="medium"></app-loading-spinner>
+
+        <div *ngIf="!loadingAvailable && availableDishes.length === 0" class="no-dishes">
+          <p>No hay platos disponibles</p>
+        </div>
+
+        <div *ngIf="!loadingAvailable && availableDishes.length > 0" class="dishes-list">
+          <div *ngFor="let dish of availableDishes" class="dish-item">
+            <div class="dish-item-image">
+              <img *ngIf="dish.photo" [src]="dish.photo" [alt]="dish.name" (error)="onImageError($event)">
+              <div *ngIf="!dish.photo" class="no-image">🍽️</div>
+            </div>
+            <div class="dish-item-info">
+              <h4>{{ dish.name }}</h4>
+              <p class="price">{{ dish.price }}</p>
+            </div>
+            <app-button variant="primary" size="small" (clicked)="addDishToMenu(dish.id)">
+              Agregar
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

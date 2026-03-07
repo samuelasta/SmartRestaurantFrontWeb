@@ -1,21 +1,63 @@
 <div class="category-management-container">
-  <div class="header">
-    <h1>Gestión de Categorías</h1>
-    <app-button variant="primary">Agregar Categoría</app-button>
-  </div>
-
-  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
-
-  <div *ngIf="!loading" class="categories-grid">
-    <div *ngFor="let category of categories" class="category-card">
-      <h3>{{ category.name }}</h3>
-      <p>{{ category.description }}</p>
-      <div class="card-actions">
-        <app-button variant="secondary" size="small">Editar</app-button>
-        <app-button variant="danger" size="small" (clicked)="deleteCategory(category.id)">
-          Eliminar
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Gestión de Categorías</h1>
+        <p>Administra las categorías del inventario</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar Categoría
         </app-button>
       </div>
     </div>
-  </div>
+  </header>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="categories.length > 0" class="categories-grid">
+      <div *ngFor="let category of categories" class="category-card">
+        <h3>{{ category.name }}</h3>
+        <p>{{ category.description }}</p>
+        <div class="card-actions">
+          <app-button variant="secondary" size="small" (clicked)="openEditModal(category.id)">
+            Editar
+          </app-button>
+          <app-button variant="danger" size="small" (clicked)="deleteCategory(category.id)">
+            Eliminar
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="categories.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+        <rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect>
+      </svg>
+      <h3>No hay categorías</h3>
+      <p>Comienza agregando tu primera categoría</p>
+      <div class="empty-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar categoría
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de formulario -->
+  <app-category-form-modal
+    [isOpen]="isModalOpen"
+    [categoryId]="selectedCategoryId"
+    (closeModal)="closeModal()"
+    (categorySaved)="onCategorySaved()">
+  </app-category-form-modal>
 </div>

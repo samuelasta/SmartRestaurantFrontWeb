@@ -1,0 +1,201 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="close()">
+  <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Plato' : 'Nuevo Plato' }}</h2>
+      <button class="close-button" (click)="close()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="dishForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body">
+        <app-loading-spinner *ngIf="loading" size="medium"></app-loading-spinner>
+
+        <div *ngIf="!loading">
+          <div class="form-group">
+            <label for="name">Nombre <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="Ej: Bandeja Paisa, Ajiaco, Sancocho"
+              [class.error]="name?.invalid && name?.touched"
+            />
+            <div class="error-message" *ngIf="name?.invalid && name?.touched">
+              <span *ngIf="name?.errors?.['required']">El nombre es requerido</span>
+              <span *ngIf="name?.errors?.['maxlength']">Máximo 100 caracteres</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descripción <span class="required">*</span></label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              placeholder="Describe el plato (mínimo 10 caracteres)"
+              [class.error]="description?.invalid && description?.touched"
+            ></textarea>
+            <div class="error-message" *ngIf="description?.invalid && description?.touched">
+              <span *ngIf="description?.errors?.['required']">La descripción es requerida</span>
+              <span *ngIf="description?.errors?.['minlength']">Mínimo 10 caracteres</span>
+              <span *ngIf="description?.errors?.['maxlength']">Máximo 500 caracteres</span>
+            </div>
+            <div class="char-counter">{{ description?.value?.length || 0 }} / 500</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price">Precio <span class="required">*</span></label>
+              <input
+                type="number"
+                id="price"
+                formControlName="price"
+                placeholder="25000"
+                min="0.01"
+                step="0.01"
+                [class.error]="price?.invalid && price?.touched"
+              />
+              <div class="error-message" *ngIf="price?.invalid && price?.touched">
+                <span *ngIf="price?.errors?.['required']">El precio es requerido</span>
+                <span *ngIf="price?.errors?.['min']">Debe ser mayor a 0</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="categoryId">Categoría <span class="required">*</span></label>
+              <select
+                id="categoryId"
+                formControlName="categoryId"
+                [class.error]="categoryId?.invalid && categoryId?.touched"
+              >
+                <option value="">Seleccione una categoría</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="categoryId?.invalid && categoryId?.touched">
+                <span *ngIf="categoryId?.errors?.['required']">La categoría es requerida</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de Ingredientes -->
+          <div class="form-group">
+            <label>Ingredientes <span class="required">*</span></label>
+            <div class="ingredients-section">
+              <div class="ingredient-item" *ngFor="let ingredient of ingredients.controls; let i = index" [formGroup]="$any(ingredient)">
+                <div class="ingredient-fields">
+                  <div class="field">
+                    <select formControlName="product_id" [class.error]="ingredient.get('product_id')?.invalid && ingredient.get('product_id')?.touched">
+                      <option value="">Seleccionar producto</option>
+                      <option *ngFor="let product of products" [value]="product.id">
+                        {{ product.name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <input 
+                      type="number" 
+                      formControlName="quantity" 
+                      placeholder="Cantidad"
+                      min="0.01"
+                      step="0.01"
+                      [class.error]="ingredient.get('quantity')?.invalid && ingredient.get('quantity')?.touched"
+                    />
+                  </div>
+                  <div class="field">
+                    <select formControlName="unit" [class.error]="ingredient.get('unit')?.invalid && ingredient.get('unit')?.touched">
+                      <option value="g">Gramos (g)</option>
+                      <option value="kg">Kilogramos (kg)</option>
+                      <option value="ml">Mililitros (ml)</option>
+                      <option value="l">Litros (l)</option>
+                      <option value="unidad">Unidad</option>
+                    </select>
+                  </div>
+                  <button type="button" class="remove-ingredient-btn" (click)="removeIngredient(i)" title="Eliminar ingrediente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <button type="button" class="add-ingredient-btn" (click)="addIngredient()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Agregar Ingrediente
+              </button>
+
+              <div class="error-message" *ngIf="ingredients.length === 0 && dishForm.touched">
+                <span>Debe agregar al menos un ingrediente</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de Fotos -->
+          <div class="form-group">
+            <label>Fotos del Plato <span class="required">*</span></label>
+            <div class="photos-section">
+              <!-- Input para seleccionar archivos -->
+              <div class="upload-area">
+                <input 
+                  type="file" 
+                  id="photoInput" 
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                  [disabled]="uploadingImage || uploadedPhotos.length >= 10"
+                  #fileInput
+                >
+                <label for="photoInput" class="upload-label" [class.disabled]="uploadingImage || uploadedPhotos.length >= 10">
+                  <span *ngIf="uploadingImage">Subiendo...</span>
+                  <span *ngIf="!uploadingImage">
+                    {{ uploadedPhotos.length >= 10 ? 'Máximo 10 fotos' : 'Seleccionar imagen' }}
+                  </span>
+                </label>
+                <small class="help-text">Máximo 10 fotos (JPG, PNG, WEBP)</small>
+              </div>
+
+              <!-- Grid de fotos subidas -->
+              <div class="photos-grid" *ngIf="uploadedPhotos.length > 0">
+                <div class="photo-item" *ngFor="let photo of uploadedPhotos; let i = index">
+                  <img [src]="photo" alt="Foto del plato" class="photo-preview">
+                  <button type="button" class="remove-photo" (click)="removePhoto(i)" title="Eliminar foto">
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mensaje si no hay fotos -->
+              <div class="no-photos" *ngIf="uploadedPhotos.length === 0 && !uploadingImage">
+                <p>No hay fotos agregadas. Selecciona al menos una imagen.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <app-button 
+          variant="secondary" 
+          type="button"
+          (clicked)="close()"
+          [disabled]="loading">
+          Cancelar
+        </app-button>
+        <app-button 
+          variant="primary" 
+          type="submit"
+          [disabled]="loading || dishForm.invalid || uploadedPhotos.length === 0 || ingredients.length === 0">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

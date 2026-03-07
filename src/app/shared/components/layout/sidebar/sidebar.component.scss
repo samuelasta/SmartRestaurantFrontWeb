@@ -1,12 +1,96 @@
 @import 'styles/variables';
 
 .sidebar {
-  width: 250px;
+  width: 260px;
   background-color: white;
   box-shadow: $shadow-md;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: $spacing-lg $spacing-md;
+  border-bottom: 1px solid $border-color;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: $primary-color;
+    font-weight: 600;
+  }
 }
 
 .sidebar-nav {
-  padding: $spacing-md;
+  padding: $spacing-md 0;
+  flex: 1;
+}
+
+.nav-section {
+  margin-bottom: $spacing-lg;
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid $border-color;
+    padding-bottom: $spacing-md;
+  }
+}
+
+.nav-section-title {
+  padding: $spacing-xs $spacing-md;
+  margin: 0 0 $spacing-sm 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: $text-light;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin: 2px 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  color: $text-color;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $transition-fast;
+  border-radius: 0;
+  margin: 0 $spacing-sm;
+  border-radius: $border-radius-sm;
+  
+  &:hover {
+    background-color: rgba($secondary-color, 0.1);
+    color: $secondary-color;
+  }
+  
+  &.active {
+    background-color: $secondary-color;
+    color: white;
+    
+    .nav-icon {
+      filter: brightness(0) invert(1);
+    }
+  }
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  margin-right: $spacing-sm;
+  width: 24px;
+  text-align: center;
+}
+
+.nav-label {
+  font-size: 0.9rem;
+  font-weight: 500;
 }

@@ -2,58 +2,77 @@
   <div class="form-card">
     <h2>{{ isEditMode ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
 
-    <form [formGroup]="inventoryForm" (ngSubmit)="onSubmit()">
-      <div class="form-row">
-        <app-form-field label="Nombre" [required]="true">
-          <input type="text" formControlName="name" placeholder="Nombre del producto">
-        </app-form-field>
-
-        <app-form-field label="SKU" [required]="true">
-          <input type="text" formControlName="sku" placeholder="SKU-001">
-        </app-form-field>
-      </div>
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+      <app-form-field label="Nombre" [required]="true">
+        <input type="text" formControlName="name" placeholder="Nombre del producto">
+      </app-form-field>
 
       <app-form-field label="Descripción" [required]="true">
-        <textarea formControlName="description" rows="3" placeholder="Descripción del producto"></textarea>
+        <textarea formControlName="description" rows="3" placeholder="Descripción del producto (10-500 caracteres)"></textarea>
       </app-form-field>
 
       <div class="form-row">
-        <app-form-field label="Categoría" [required]="true">
-          <select formControlName="categoryId">
-            <option value="">Seleccionar categoría</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
-            </option>
-          </select>
+        <app-form-field label="Precio" [required]="true">
+          <input type="number" formControlName="price" placeholder="0.00" step="0.01">
         </app-form-field>
 
-        <app-form-field label="Cantidad" [required]="true">
-          <input type="number" formControlName="quantity" placeholder="0">
+        <app-form-field label="Peso/Cantidad" [required]="true">
+          <input type="number" formControlName="weight" placeholder="0" step="1">
         </app-form-field>
       </div>
 
       <div class="form-row">
         <app-form-field label="Stock Mínimo" [required]="true">
-          <input type="number" formControlName="minStock" placeholder="0">
-        </app-form-field>
-
-        <app-form-field label="Stock Máximo" [required]="true">
-          <input type="number" formControlName="maxStock" placeholder="0">
-        </app-form-field>
-      </div>
-
-      <div class="form-row">
-        <app-form-field label="Precio Unitario" [required]="true">
-          <input type="number" formControlName="unitPrice" placeholder="0.00">
+          <input type="number" formControlName="minimumStock" placeholder="0.00" step="0.01">
         </app-form-field>
 
         <app-form-field label="Proveedor" [required]="true">
-          <input type="text" formControlName="supplier" placeholder="Nombre del proveedor">
+          <select formControlName="suplierId">
+            <option value="">Seleccionar proveedor</option>
+            <option *ngFor="let suplier of supliers" [value]="suplier.id">
+              {{ suplier.name }}
+            </option>
+          </select>
         </app-form-field>
       </div>
 
-      <app-form-field label="Ubicación" [required]="true">
-        <input type="text" formControlName="location" placeholder="Bodega A - Estante 1">
+      <!-- Sección de Fotos -->
+      <app-form-field label="Fotos del Producto" [required]="true">
+        <div class="photos-section">
+          <!-- Input para seleccionar archivos -->
+          <div class="upload-area">
+            <input 
+              type="file" 
+              id="photoInput" 
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              [disabled]="uploadingImage || uploadedPhotos.length >= 10"
+              #fileInput
+            >
+            <label for="photoInput" class="upload-label" [class.disabled]="uploadingImage || uploadedPhotos.length >= 10">
+              <span *ngIf="uploadingImage">Subiendo...</span>
+              <span *ngIf="!uploadingImage">
+                {{ uploadedPhotos.length >= 10 ? 'Máximo 10 fotos' : 'Seleccionar imagen' }}
+              </span>
+            </label>
+            <small class="help-text">Máximo 10 fotos (JPG, PNG, WEBP)</small>
+          </div>
+
+          <!-- Grid de fotos subidas -->
+          <div class="photos-grid" *ngIf="uploadedPhotos.length > 0">
+            <div class="photo-item" *ngFor="let photo of uploadedPhotos; let i = index">
+              <img [src]="photo" alt="Foto del producto" class="photo-preview">
+              <button type="button" class="remove-photo" (click)="removePhoto(i)" title="Eliminar foto">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- Mensaje si no hay fotos -->
+          <div class="no-photos" *ngIf="uploadedPhotos.length === 0 && !uploadingImage">
+            <p>No hay fotos agregadas. Selecciona al menos una imagen.</p>
+          </div>
+        </div>
       </app-form-field>
 
       <div class="form-actions">
@@ -63,7 +82,7 @@
         <app-button 
           type="submit" 
           variant="primary" 
-          [disabled]="inventoryForm.invalid"
+          [disabled]="productForm.invalid || uploadedPhotos.length === 0"
           [loading]="loading">
           {{ isEditMode ? 'Actualizar' : 'Crear' }}
         </app-button>

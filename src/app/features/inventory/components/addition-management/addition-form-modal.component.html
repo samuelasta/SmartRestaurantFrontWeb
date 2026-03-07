@@ -1,0 +1,126 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="close()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Adición' : 'Nueva Adición' }}</h2>
+      <button class="close-button" (click)="close()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="additionForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body">
+        <app-loading-spinner *ngIf="loading" size="medium"></app-loading-spinner>
+
+        <div *ngIf="!loading">
+          <div class="form-group">
+            <label for="name">Nombre <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="Ej: Queso Extra, Aguacate, Tocineta"
+              [class.error]="name?.invalid && name?.touched"
+            />
+            <div class="error-message" *ngIf="name?.invalid && name?.touched">
+              <span *ngIf="name?.errors?.['required']">El nombre es requerido</span>
+              <span *ngIf="name?.errors?.['minlength']">Mínimo 1 carácter</span>
+              <span *ngIf="name?.errors?.['maxlength']">Máximo 100 caracteres</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descripción <span class="required">*</span></label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="3"
+              placeholder="Describe la adición"
+              [class.error]="description?.invalid && description?.touched"
+            ></textarea>
+            <div class="error-message" *ngIf="description?.invalid && description?.touched">
+              <span *ngIf="description?.errors?.['required']">La descripción es requerida</span>
+              <span *ngIf="description?.errors?.['maxlength']">Máximo 500 caracteres</span>
+            </div>
+            <div class="char-counter">{{ description?.value?.length || 0 }} / 500</div>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Precio <span class="required">*</span></label>
+            <input
+              type="number"
+              id="price"
+              formControlName="price"
+              placeholder="5000"
+              min="0.01"
+              step="0.01"
+              [class.error]="price?.invalid && price?.touched"
+            />
+            <div class="error-message" *ngIf="price?.invalid && price?.touched">
+              <span *ngIf="price?.errors?.['required']">El precio es requerido</span>
+              <span *ngIf="price?.errors?.['min']">Debe ser mayor a 0</span>
+            </div>
+          </div>
+
+          <!-- Sección de Fotos (Opcional) -->
+          <div class="form-group">
+            <label>Fotos de la Adición (Opcional)</label>
+            <div class="photos-section">
+              <!-- Input para seleccionar archivos -->
+              <div class="upload-area">
+                <input 
+                  type="file" 
+                  id="photoInput" 
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                  [disabled]="uploadingImage || uploadedPhotos.length >= 10"
+                  #fileInput
+                >
+                <label for="photoInput" class="upload-label" [class.disabled]="uploadingImage || uploadedPhotos.length >= 10">
+                  <span *ngIf="uploadingImage">Subiendo...</span>
+                  <span *ngIf="!uploadingImage">
+                    {{ uploadedPhotos.length >= 10 ? 'Máximo 10 fotos' : 'Seleccionar imagen' }}
+                  </span>
+                </label>
+                <small class="help-text">Máximo 10 fotos (JPG, PNG, WEBP) - Opcional</small>
+              </div>
+
+              <!-- Grid de fotos subidas -->
+              <div class="photos-grid" *ngIf="uploadedPhotos.length > 0">
+                <div class="photo-item" *ngFor="let photo of uploadedPhotos; let i = index">
+                  <img [src]="photo" alt="Foto de la adición" class="photo-preview">
+                  <button type="button" class="remove-photo" (click)="removePhoto(i)" title="Eliminar foto">
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mensaje si no hay fotos -->
+              <div class="no-photos" *ngIf="uploadedPhotos.length === 0 && !uploadingImage">
+                <p>No hay fotos agregadas (opcional).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <app-button 
+          variant="secondary" 
+          type="button"
+          (clicked)="close()"
+          [disabled]="loading">
+          Cancelar
+        </app-button>
+        <app-button 
+          variant="primary" 
+          type="submit"
+          [disabled]="loading || additionForm.invalid">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

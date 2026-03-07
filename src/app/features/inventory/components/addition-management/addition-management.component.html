@@ -1,0 +1,118 @@
+<div class="addition-management-container">
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Gestión de Adiciones</h1>
+        <p>Administra las adiciones disponibles</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar Adición
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="additions.length > 0" class="additions-grid">
+      <div *ngFor="let addition of additions" class="addition-card">
+        <div class="addition-image">
+          <ng-container *ngIf="addition.photo; else noImage">
+            <img [src]="addition.photo" [alt]="addition.name" (error)="onImageError($event)">
+          </ng-container>
+          <ng-template #noImage>
+            <div class="placeholder-image">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <span>Sin imagen</span>
+            </div>
+          </ng-template>
+        </div>
+        
+        <div class="addition-info">
+          <h3 class="addition-name">{{ addition.name }}</h3>
+          <p class="addition-price">{{ addition.price | currency }}</p>
+          <div class="addition-actions">
+            <button class="action-btn edit" (click)="openEditModal(addition.id)" title="Editar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="action-btn delete" (click)="deleteAddition(addition.id)" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="additions.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="16"></line>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+      <h3>{{ currentPage > 1 ? 'No hay adiciones en esta página' : 'No hay adiciones' }}</h3>
+      <p>{{ currentPage > 1 ? 'Intenta volver a la página anterior' : 'Comienza agregando tu primera adición al inventario' }}</p>
+      <div class="empty-actions">
+        <app-button 
+          variant="secondary" 
+          *ngIf="currentPage > 1"
+          (clicked)="previousPage()">
+          ← Página anterior
+        </app-button>
+        <app-button 
+          variant="primary" 
+          *ngIf="currentPage === 1"
+          (clicked)="openCreateModal()">
+          Agregar adición
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer con paginación -->
+  <footer class="page-footer" *ngIf="!loading && additions.length > 0">
+    <div class="pagination">
+      <app-button 
+        variant="secondary" 
+        size="small" 
+        [disabled]="currentPage === 1"
+        (clicked)="previousPage()">
+        ← Anterior
+      </app-button>
+      <span class="page-info">Página <strong>{{ currentPage }}</strong></span>
+      <app-button 
+        variant="secondary" 
+        size="small"
+        [disabled]="!hasMorePages"
+        (clicked)="nextPage()">
+        Siguiente →
+      </app-button>
+    </div>
+  </footer>
+
+  <!-- Modal de formulario -->
+  <app-addition-form-modal
+    [isOpen]="isModalOpen"
+    [additionId]="selectedAdditionId"
+    (closeModal)="closeModal()"
+    (additionSaved)="onAdditionSaved()">
+  </app-addition-form-modal>
+</div>

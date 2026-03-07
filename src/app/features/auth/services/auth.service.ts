@@ -32,22 +32,14 @@ export class AuthService {
    * Puede requerir 2FA si está habilitado
    */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.httpClient.post<AuthResponse>('/auth/login', credentials).pipe(
-      tap(response => {
-        if (!response.is2faRequired) {
-          this.handleSuccessfulAuth(response);
-        }
-      })
-    );
+    return this.httpClient.post<AuthResponse>('/auth/login', credentials);
   }
 
   /**
    * Verificación 2FA después del login
    */
   verify2fa(request: VerifyRequest): Observable<AuthResponse> {
-    return this.httpClient.post<AuthResponse>('/auth/verify-2fa', request).pipe(
-      tap(response => this.handleSuccessfulAuth(response))
-    );
+    return this.httpClient.post<AuthResponse>('/auth/verify-2fa', request);
   }
 
   /**

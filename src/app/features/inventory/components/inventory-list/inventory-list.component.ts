@@ -1,9 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { InventoryService } from '../../services/inventory.service';
-import { InventoryStateService } from '../../services/inventory-state.service';
-import { InventoryItem } from '../../models/inventory-item.model';
+import { ProductService } from '../../services/product.service';
+import { ProductListResponse } from '../../models/product.model';
 import { NotificationService } from '@core/services/notification.service';
+
+interface PaginatedContent {
+  content: ProductListResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
 
 @Component({
   selector: 'app-inventory-list',
@@ -11,43 +18,81 @@ import { NotificationService } from '@core/services/notification.service';
   styleUrls: ['./inventory-list.component.scss']
 })
 export class InventoryListComponent implements OnInit {
-  inventoryItems: InventoryItem[] = [];
+  products: ProductListResponse[] = [];
   loading = false;
+  currentPage = 1;
+  hasMorePages = true; // Para controlar si hay más páginas
+  pageSize = 10; // Tamaño de página del backend
   columns = [
-    { key: 'sku', label: 'SKU' },
+    { key: 'id', label: 'ID' },
     { key: 'name', label: 'Nombre' },
-    { key: 'category', label: 'Categoría' },
-    { key: 'quantity', label: 'Cantidad' },
-    { key: 'unitPrice', label: 'Precio' }
+    { key: 'price', label: 'Precio' },
+    { key: 'weight', label: 'Peso' },
+    { key: 'minimumStock', label: 'Stock Mínimo' },
+    { key: 'state', label: 'Estado' }
   ];
 
   constructor(
-    private inventoryService: InventoryService,
-    private inventoryStateService: InventoryStateService,
+    private productService: ProductService,
     private router: Router,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.loadInventory();
+    this.loadProducts();
   }
 
-  loadInventory(): void {
+  navigateToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  loadProducts(): void {
     this.loading = true;
-    this.inventoryService.getAll().subscribe({
-      next: (items) => {
-        this.inventoryItems = items;
-        this.inventoryStateService.setInventoryItems(items);
+    this.productService.getProducts(this.currentPage - 1).subscribe({
+      next: (response) => {
+        if (!response.error) {
+          const message = response.message as any;
+          if (Array.isArray(message)) {
+            this.products = message;
+            this.hasMorePages = message.length >= this.pageSize;
+          } else {
+            this.products = [];
+            this.hasMorePages = false;
+          }
+        }
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error('❌ [PRODUCTS] Error:', err);
         this.loading = false;
+        this.notificationService.showError('Error al cargar los productos');
       }
     });
   }
 
-  onRowClick(item: InventoryItem): void {
-    this.router.navigate(['/inventory/detail', item.id]);
+  nextPage(): void {
+    this.currentPage++;
+    this.loadProducts();
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadProducts();
+    }
+  }
+
+  onRowClick(product: ProductListResponse): void {
+    this.router.navigate(['/inventory/detail', product.id]);
+  }
+
+  // Manejar error de imagen
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    // Evitar loop infinito: solo cambiar si no es ya el placeholder
+    if (!img.src.includes('placeholder')) {
+      img.src = 'https://via.placeholder.com/150?text=Sin+Imagen';
+    }
   }
 
   navigateToNew(): void {

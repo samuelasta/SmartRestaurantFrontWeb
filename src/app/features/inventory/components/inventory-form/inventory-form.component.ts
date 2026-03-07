@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InventoryService } from '../../services/inventory.service';
+import { ProductService } from '../../services/product.service';
+import { ImageService } from '../../services/image.service';
+import { SuplierService } from '../../services/suplier.service';
 import { CategoryService } from '../../services/category.service';
-import { Category } from '../../models/category.model';
+import { SuplierResponse } from '../../models/suplier.model';
+import { CategoryResponse } from '../../models/category.model';
 import { NotificationService } from '@core/services/notification.service';
 
 @Component({
@@ -12,88 +15,189 @@ import { NotificationService } from '@core/services/notification.service';
   styleUrls: ['./inventory-form.component.scss']
 })
 export class InventoryFormComponent implements OnInit {
-  inventoryForm!: FormGroup;
-  categories: Category[] = [];
+  productForm!: FormGroup;
+  supliers: SuplierResponse[] = [];
+  categories: CategoryResponse[] = [];
   loading = false;
   isEditMode = false;
-  itemId: number | null = null;
+  productId: string | null = null;
+  uploadedPhotos: string[] = [];
+  uploadingImage = false;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private inventoryService: InventoryService,
+    private productService: ProductService,
+    private imageService: ImageService,
+    private suplierService: SuplierService,
     private categoryService: CategoryService,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
-    this.loadCategories();
+    this.loadSupliers();
     
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
-      this.itemId = Number(id);
-      this.loadItem(this.itemId);
+      this.productId = id;
+      this.loadProduct(id);
     }
   }
 
   initForm(): void {
-    this.inventoryForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
-      sku: ['', [Validators.required]],
-      categoryId: ['', [Validators.required]],
-      quantity: [0, [Validators.required, Validators.min(0)]],
-      minStock: [0, [Validators.required, Validators.min(0)]],
-      maxStock: [0, [Validators.required, Validators.min(0)]],
-      unitPrice: [0, [Validators.required, Validators.min(0)]],
-      supplier: ['', [Validators.required]],
-      location: ['', [Validators.required]]
+    this.productForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(50)]],
+      description: ['', [Validators.required, Validators.maxLength(500)]],
+      price: [0, [Validators.required, Validators.min(0.01)]],
+      weight: [0, [Validators.required, Validators.min(0.01)]],
+      photos: [[], [Validators.required, Validators.minLength(1)]],
+      minimumStock: [0, [Validators.required, Validators.min(0.01)]],
+      suplierId: ['', [Validators.required]]
     });
   }
 
-  loadCategories(): void {
-    this.categoryService.getAll().subscribe({
-      next: (categories) => {
-        this.categories = categories;
+  loadSupliers(): void {
+    this.suplierService.getAllSupliers().subscribe({
+      next: (response) => {
+        if (!response.error) {
+          this.supliers = response.message as SuplierResponse[];
+        }
+      },
+      error: () => {
+        this.notificationService.showError('Error al cargar los proveedores');
       }
     });
   }
 
-  loadItem(id: number): void {
-    this.inventoryService.getById(id).subscribe({
-      next: (item) => {
-        this.inventoryForm.patchValue({
-          ...item,
-          categoryId: item.category.id
-        });
+  loadProduct(id: string): void {
+    this.loading = true;
+    this.productService.getProductById(id).subscribe({
+      next: (response) => {
+        this.loading = false;
+        if (!response.error) {
+          const product = response.message as any;
+          this.productForm.patchValue({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            weight: product.weight,
+            photos: product.photos,
+            minimumStock: product.minimumStock,
+            suplierId: product.suplier?.id || ''
+          });
+          this.uploadedPhotos = product.photos || [];
+        }
+      },
+      error: () => {
+        this.loading = false;
+        this.notificationService.showError('Error al cargar el producto');
       }
     });
   }
 
   onSubmit(): void {
-    if (this.inventoryForm.valid) {
+    if (this.productForm.valid) {
       this.loading = true;
-      const formData = this.inventoryForm.value;
+      const formData = this.productForm.value;
 
-      const request = this.isEditMode && this.itemId
-        ? this.inventoryService.update(this.itemId, formData)
-        : this.inventoryService.create(formData);
+      // Usar las fotos subidas como lista de URLs
+      const photos = this.uploadedPhotos;
 
-      request.subscribe({
-        next: () => {
-          this.notificationService.showSuccess(
-            this.isEditMode ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente'
-          );
-          this.router.navigate(['/inventory/list']);
-        },
-        error: () => {
-          this.loading = false;
-        }
-      });
+      if (this.isEditMode && this.productId) {
+        // Actualizar producto
+        this.productService.updateProduct(this.productId, {
+          name: formData.name,
+          description: formData.description,
+          price: formData.price,
+          weight: formData.weight,
+          photos: photos,
+          minimumStock: formData.minimumStock
+        }).subscribe({
+          next: (response) => {
+            this.loading = false;
+            if (!response.error) {
+              this.notificationService.showSuccess('Producto actualizado exitosamente');
+              this.router.navigate(['/inventory/list']);
+            } else {
+              this.notificationService.showError(response.message as string);
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.notificationService.showError('Error al actualizar el producto');
+          }
+        });
+      } else {
+        // Crear producto
+        this.productService.createProduct(formData.suplierId, {
+          name: formData.name,
+          description: formData.description,
+          price: formData.price,
+          weight: formData.weight,
+          photos: photos,
+          minimumStock: formData.minimumStock
+        }).subscribe({
+          next: (response) => {
+            this.loading = false;
+            if (!response.error) {
+              this.notificationService.showSuccess('Producto creado exitosamente');
+              this.router.navigate(['/inventory/list']);
+            } else {
+              this.notificationService.showError(response.message as string);
+            }
+          },
+          error: () => {
+            this.loading = false;
+            this.notificationService.showError('Error al crear el producto');
+          }
+        });
+      }
     }
+  }
+
+  // Manejar selección de archivo para subir imagen
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.uploadImage(input.files[0]);
+    }
+  }
+
+  // Subir imagen a Cloudinary
+  uploadImage(file: File): void {
+    if (this.uploadedPhotos.length >= 10) {
+      this.notificationService.showError('Máximo 10 fotos permitidas');
+      return;
+    }
+
+    this.uploadingImage = true;
+    this.imageService.uploadImage(file).subscribe({
+      next: (response) => {
+        this.uploadingImage = false;
+        if (!response.error) {
+          const imageData = response.message as { url: string };
+          const imageUrl = imageData.url;
+          this.uploadedPhotos.push(imageUrl);
+          this.productForm.patchValue({ photos: this.uploadedPhotos });
+          this.notificationService.showSuccess('Imagen subida exitosamente');
+        } else {
+          this.notificationService.showError('Error al subir la imagen');
+        }
+      },
+      error: () => {
+        this.uploadingImage = false;
+        this.notificationService.showError('Error al subir la imagen');
+      }
+    });
+  }
+
+  // Eliminar una foto de la lista
+  removePhoto(index: number): void {
+    this.uploadedPhotos.splice(index, 1);
+    this.productForm.patchValue({ photos: this.uploadedPhotos });
   }
 
   cancel(): void {

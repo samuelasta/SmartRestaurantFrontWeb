@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NotificationService } from '../services/notification.service';
 
@@ -16,6 +16,12 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        // Verificar si es una respuesta de 2FA (el backend devuelve is2faRequired en el error)
+        if (error.error && error.error.is2faRequired) {
+          // No mostrar error, el componente manejará el 2FA
+          return throwError(() => error);
+        }
+
         let errorMessage = 'Ha ocurrido un error';
         
         if (error.error instanceof ErrorEvent) {

@@ -1,48 +1,134 @@
 <div class="inventory-detail-container">
   <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
 
-  <div *ngIf="!loading && item" class="detail-card">
+  <div *ngIf="!loading && product" class="detail-card">
     <div class="header">
-      <h1>{{ item.name }}</h1>
+      <h1>{{ product.name }}</h1>
       <div class="actions">
-        <app-button variant="secondary" (clicked)="editItem()">Editar</app-button>
-        <app-button variant="danger" (clicked)="deleteItem()">Eliminar</app-button>
+        <app-button variant="secondary" (clicked)="editProduct()">Editar</app-button>
+        <app-button variant="danger" (clicked)="deleteProduct()">Eliminar</app-button>
         <app-button variant="primary" (clicked)="goBack()">Volver</app-button>
       </div>
     </div>
 
     <div class="detail-content">
-      <div class="detail-row">
-        <span class="label">SKU:</span>
-        <span class="value">{{ item.sku }}</span>
+      <!-- Galería de fotos -->
+      <div class="photos-section" *ngIf="product.photos && product.photos.length > 0">
+        <div class="main-photo">
+          <img 
+            [src]="product.photos[selectedPhotoIndex]" 
+            [alt]="product.name"
+            (error)="onImageError($event)">
+        </div>
+        <div class="photo-thumbnails" *ngIf="product.photos.length > 1">
+          <div 
+            class="thumbnail" 
+            *ngFor="let photo of product.photos; let i = index"
+            [class.active]="i === selectedPhotoIndex"
+            (click)="selectPhoto(i)">
+            <img [src]="photo" [alt]="product.name" (error)="onImageError($event)">
+          </div>
+        </div>
       </div>
-      <div class="detail-row">
-        <span class="label">Descripción:</span>
-        <span class="value">{{ item.description }}</span>
+
+      <!-- Sin foto -->
+      <div class="no-photo" *ngIf="!product.photos || product.photos.length === 0">
+        <div class="placeholder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p>Sin imagen</p>
+        </div>
       </div>
-      <div class="detail-row">
-        <span class="label">Categoría:</span>
-        <span class="value">{{ item.category.name }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Cantidad:</span>
-        <span class="value">{{ item.quantity }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Stock Mínimo:</span>
-        <span class="value">{{ item.minStock }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Precio Unitario:</span>
-        <span class="value">{{ item.unitPrice | currencyFormat }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Proveedor:</span>
-        <span class="value">{{ item.supplier }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="label">Ubicación:</span>
-        <span class="value">{{ item.location }}</span>
+
+      <!-- Información del producto -->
+      <div class="info-section">
+        <div class="detail-row">
+          <span class="label">Descripción:</span>
+          <span class="value">{{ product.description }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="label">Precio:</span>
+          <span class="value price">{{ product.price | currency }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Peso/Cantidad:</span>
+          <span class="value">{{ product.weight }} g</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Stock Mínimo:</span>
+          <span class="value">{{ product.minimumStock }}</span>
+        </div>
+
+        <!-- Stock Actual -->
+        <div class="detail-row" *ngIf="product.currentWeight !== undefined">
+          <span class="label">Stock Actual:</span>
+          <span class="value stock-current" [class.low-stock]="product.currentWeight <= product.minimumStock">
+            {{ product.currentWeight }} g
+          </span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Estado:</span>
+          <span class="value" [class.active]="product.state === 'ACTIVE'" [class.inactive]="product.state === 'INACTIVE'">
+            {{ product.state === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        <div class="detail-row" *ngIf="product.suplier">
+          <span class="label">Proveedor:</span>
+          <span class="value">{{ product.suplier.name }}</span>
+        </div>
+
+        <div class="detail-row" *ngIf="product.suplier?.email">
+          <span class="label">Email Proveedor:</span>
+          <span class="value">{{ product.suplier?.email }}</span>
+        </div>
+
+        <div class="detail-row" *ngIf="product.suplier?.phone">
+          <span class="label">Teléfono Proveedor:</span>
+          <span class="value">{{ product.suplier?.phone }}</span>
+        </div>
+
+        <!-- Sección de control de stock -->
+        <div class="stock-control">
+          <h3>Control de Stock</h3>
+          <form [formGroup]="stockForm" class="stock-form">
+            <div class="stock-input">
+              <label for="weight">Cantidad (g):</label>
+              <input 
+                type="number" 
+                id="weight" 
+                formControlName="weight" 
+                min="1" 
+                step="1"
+                placeholder="0">
+            </div>
+            <div class="stock-actions">
+              <app-button 
+                variant="success" 
+                type="button"
+                [disabled]="stockForm.invalid || processingStock"
+                [loading]="processingStock"
+                (clicked)="addStock()">
+                + Agregar
+              </app-button>
+              <app-button 
+                variant="danger" 
+                type="button"
+                [disabled]="stockForm.invalid || processingStock"
+                [loading]="processingStock"
+                (clicked)="discountStock()">
+                - Descontar
+              </app-button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>

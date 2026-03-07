@@ -1,23 +1,91 @@
 <div class="stock-alert-container">
-  <h1>Alertas de Stock Bajo</h1>
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Alertas de Stock Bajo</h1>
+        <p>Productos que requieren reabastecimiento</p>
+      </div>
+      <div class="header-actions" *ngIf="!loading && lowStockProducts.length > 0">
+        <div class="alert-summary">
+          <span class="alert-count">{{ lowStockProducts.length }} productos con stock bajo</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
 
-  <div *ngIf="!loading && lowStockItems.length === 0" class="no-alerts">
-    <p>No hay productos con stock bajo</p>
-  </div>
-
-  <div *ngIf="!loading && lowStockItems.length > 0" class="alerts-list">
-    <div *ngFor="let item of lowStockItems" class="alert-card">
-      <div class="alert-icon">⚠️</div>
-      <div class="alert-content">
-        <h3>{{ item.name }}</h3>
-        <p>SKU: {{ item.sku }}</p>
-        <p>Stock actual: {{ item.quantity }} / Mínimo: {{ item.minStock }}</p>
-      </div>
-      <app-button variant="primary" (clicked)="viewItem(item)">
-        Ver Detalle
-      </app-button>
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="lowStockProducts.length === 0" class="no-alerts">
+      <div class="success-icon">✓</div>
+      <h2>¡Todo en orden!</h2>
+      <p>No hay productos con stock bajo en este momento</p>
     </div>
-  </div>
+
+    <div *ngIf="lowStockProducts.length > 0" class="alerts-grid">
+      <div 
+        *ngFor="let product of lowStockProducts" 
+        class="alert-card"
+        [class.critical]="getAlertLevel(product) === 'critical'"
+        [class.warning]="getAlertLevel(product) === 'warning'"
+        [class.low]="getAlertLevel(product) === 'low'"
+        (click)="viewProduct(product)">
+        
+        <div class="alert-severity">
+          <div class="severity-icon">
+            <svg *ngIf="getAlertLevel(product) === 'critical'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <svg *ngIf="getAlertLevel(product) === 'warning'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <svg *ngIf="getAlertLevel(product) === 'low'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </div>
+          <span class="severity-label">
+            {{ getAlertLevel(product) === 'critical' ? 'Crítico' : getAlertLevel(product) === 'warning' ? 'Advertencia' : 'Bajo' }}
+          </span>
+        </div>
+
+        <div class="product-image">
+          <img *ngIf="product.photo" [src]="product.photo" [alt]="product.name">
+          <div *ngIf="!product.photo" class="no-image">📦</div>
+        </div>
+
+        <div class="alert-content">
+          <h3>{{ product.name }}</h3>
+          <div class="stock-info">
+            <div class="stock-numbers">
+              <span class="current-stock">Stock actual: <strong>{{ product.weight }}g</strong></span>
+              <span class="min-stock">Mínimo: <strong>{{ product.minimumStock }}g</strong></span>
+            </div>
+            <div class="stock-bar">
+              <div class="stock-fill" [style.width.%]="getStockPercentage(product)"></div>
+            </div>
+            <span class="stock-percentage">{{ getStockPercentage(product) | number:'1.0-0' }}% del mínimo</span>
+          </div>
+        </div>
+
+        <div class="alert-action">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </main>
 </div>

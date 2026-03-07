@@ -15,6 +15,28 @@ const routes: Routes = [
     path: 'inventory',
     loadChildren: () => import('./features/inventory/inventory.module').then(m => m.InventoryModule)
   },
+  // Ruta de dashboard por defecto para usuarios autenticados
+  {
+    path: 'dashboard',
+    redirectTo: '/inventory',
+    pathMatch: 'full'
+  },
+  {
+    path: 'admin',
+    redirectTo: '/inventory'
+  },
+  {
+    path: 'kitchen',
+    redirectTo: '/inventory'
+  },
+  {
+    path: 'waiter',
+    redirectTo: '/inventory'
+  },
+  {
+    path: 'customer',
+    redirectTo: '/inventory'
+  },
   {
     path: '**',
     redirectTo: '/auth/login'

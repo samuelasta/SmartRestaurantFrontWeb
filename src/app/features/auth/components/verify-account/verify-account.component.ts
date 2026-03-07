@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
 
@@ -17,11 +17,19 @@ export class VerifyAccountComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    
+    // Leer email de los queryParams
+    this.route.queryParams.subscribe(params => {
+      if (params['email']) {
+        this.verifyForm.patchValue({ email: params['email'] });
+      }
+    });
   }
 
   initForm(): void {
@@ -42,12 +50,14 @@ export class VerifyAccountComponent implements OnInit {
       };
       
       this.authService.verifyEmail(request).subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Cuenta verificada exitosamente');
+        next: (message) => {
+          this.notificationService.showSuccess(message || 'Cuenta verificada exitosamente');
           this.router.navigate(['/auth/login']);
         },
-        error: () => {
+        error: (error) => {
           this.loading = false;
+          const message = error?.error?.message || 'Error al verificar la cuenta';
+          this.notificationService.showError(message);
         }
       });
     }

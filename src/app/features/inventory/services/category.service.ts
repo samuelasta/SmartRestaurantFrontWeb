@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClientService } from '@core/services/http-client.service';
-import { Category } from '../models/category.model';
+import { 
+  Category, 
+  CreateCategoryDTO, 
+  UpdateCategoryDTO,
+  CategoryResponse 
+} from '../models/category.model';
+import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,23 +16,43 @@ export class CategoryService {
 
   constructor(private httpClient: HttpClientService) {}
 
-  getAll(): Observable<Category[]> {
-    return this.httpClient.get<Category[]>('/categories');
+  /**
+   * Listar todas las categorías activas
+   * GET /api/categories
+   */
+  getAllCategories(): Observable<ApiResponse<CategoryResponse[]>> {
+    return this.httpClient.get<ApiResponse<CategoryResponse[]>>('/categories');
   }
 
-  getById(id: number): Observable<Category> {
-    return this.httpClient.get<Category>(`/categories/${id}`);
+  /**
+   * Obtener detalle de una categoría
+   * GET /api/categories/{id}
+   */
+  getCategoryById(id: string): Observable<ApiResponse<Category>> {
+    return this.httpClient.get<ApiResponse<Category>>(`/categories/${id}`);
   }
 
-  create(category: Partial<Category>): Observable<Category> {
-    return this.httpClient.post<Category>('/categories', category);
+  /**
+   * Crear categoría
+   * POST /api/categories
+   */
+  createCategory(category: CreateCategoryDTO): Observable<ApiResponse<string>> {
+    return this.httpClient.post<ApiResponse<string>>('/categories', category);
   }
 
-  update(id: number, category: Partial<Category>): Observable<Category> {
-    return this.httpClient.put<Category>(`/categories/${id}`, category);
+  /**
+   * Actualizar categoría
+   * PUT /api/categories/{id}
+   */
+  updateCategory(id: string, category: UpdateCategoryDTO): Observable<ApiResponse<string>> {
+    return this.httpClient.put<ApiResponse<string>>(`/categories/${id}`, category);
   }
 
-  delete(id: number): Observable<void> {
-    return this.httpClient.delete<void>(`/categories/${id}`);
+  /**
+   * Eliminar (desactivar) categoría
+   * DELETE /api/categories/{id}
+   */
+  deleteCategory(id: string): Observable<ApiResponse<string>> {
+    return this.httpClient.delete<ApiResponse<string>>(`/categories/${id}`);
   }
 }

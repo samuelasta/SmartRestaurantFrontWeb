@@ -1,0 +1,68 @@
+<div class="supplier-management-container">
+  <!-- Header con navegación -->
+  <header class="page-header">
+    <div class="header-top">
+      <app-button variant="secondary" size="small" (clicked)="navigateToDashboard()">
+        ← Volver al Dashboard
+      </app-button>
+    </div>
+    <div class="header-main">
+      <div class="header-info">
+        <h1>Gestión de Proveedores</h1>
+        <p>Administra los proveedores del inventario</p>
+      </div>
+      <div class="header-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar Proveedor
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-loading-spinner *ngIf="loading" size="large"></app-loading-spinner>
+
+  <!-- Contenido principal -->
+  <main class="page-content" *ngIf="!loading">
+    <div *ngIf="suppliers.length > 0" class="suppliers-grid">
+      <div *ngFor="let supplier of suppliers" class="supplier-card">
+        <h3>{{ supplier.name }}</h3>
+        <div class="supplier-info">
+          <p><strong>Dirección:</strong> {{ supplier.address }}</p>
+          <p><strong>Teléfono:</strong> {{ supplier.phone }}</p>
+          <p><strong>Email:</strong> {{ supplier.email }}</p>
+        </div>
+        <div class="card-actions">
+          <app-button variant="secondary" size="small" (clicked)="openEditModal(supplier.id)">
+            Editar
+          </app-button>
+          <app-button variant="danger" size="small" (clicked)="deleteSupplier(supplier.id)">
+            Eliminar
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="suppliers.length === 0" class="empty-state">
+      <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <polyline points="17 11 19 13 23 9"></polyline>
+      </svg>
+      <h3>No hay proveedores</h3>
+      <p>Comienza agregando tu primer proveedor</p>
+      <div class="empty-actions">
+        <app-button variant="primary" (clicked)="openCreateModal()">
+          Agregar proveedor
+        </app-button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de formulario -->
+  <app-supplier-form-modal
+    [isOpen]="isModalOpen"
+    [supplierId]="selectedSupplierId"
+    (closeModal)="closeModal()"
+    (supplierSaved)="onSupplierSaved()">
+  </app-supplier-form-modal>
+</div>

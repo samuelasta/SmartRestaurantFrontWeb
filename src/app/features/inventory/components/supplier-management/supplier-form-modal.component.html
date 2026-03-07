@@ -1,0 +1,101 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="close()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+      <button class="close-button" (click)="close()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="supplierForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body">
+        <app-loading-spinner *ngIf="loading" size="medium"></app-loading-spinner>
+
+        <div class="form-group" *ngIf="!loading">
+          <label for="name">Nombre <span class="required">*</span></label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            placeholder="Ej: Distribuidora XYZ"
+            [class.error]="name?.invalid && name?.touched"
+          />
+          <div class="error-message" *ngIf="name?.invalid && name?.touched">
+            <span *ngIf="name?.errors?.['required']">El nombre es requerido</span>
+            <span *ngIf="name?.errors?.['minlength']">Mínimo 1 carácter</span>
+            <span *ngIf="name?.errors?.['maxlength']">Máximo 50 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="!loading">
+          <label for="address">Dirección <span class="required">*</span></label>
+          <input
+            type="text"
+            id="address"
+            formControlName="address"
+            placeholder="Ej: Calle 123 #45-67"
+            [class.error]="address?.invalid && address?.touched"
+          />
+          <div class="error-message" *ngIf="address?.invalid && address?.touched">
+            <span *ngIf="address?.errors?.['required']">La dirección es requerida</span>
+            <span *ngIf="address?.errors?.['minlength']">Mínimo 1 carácter</span>
+            <span *ngIf="address?.errors?.['maxlength']">Máximo 50 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-row" *ngIf="!loading">
+          <div class="form-group">
+            <label for="phone">Teléfono <span class="required">*</span></label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              placeholder="3001234567"
+              maxlength="10"
+              [class.error]="phone?.invalid && phone?.touched"
+            />
+            <div class="error-message" *ngIf="phone?.invalid && phone?.touched">
+              <span *ngIf="phone?.errors?.['required']">El teléfono es requerido</span>
+              <span *ngIf="phone?.errors?.['pattern']">Debe ser un número de 10 dígitos</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder="proveedor@ejemplo.com"
+              [class.error]="email?.invalid && email?.touched"
+            />
+            <div class="error-message" *ngIf="email?.invalid && email?.touched">
+              <span *ngIf="email?.errors?.['required']">El email es requerido</span>
+              <span *ngIf="email?.errors?.['email']">Email inválido</span>
+              <span *ngIf="email?.errors?.['maxlength']">Máximo 50 caracteres</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <app-button 
+          variant="secondary" 
+          type="button"
+          (clicked)="close()"
+          [disabled]="loading">
+          Cancelar
+        </app-button>
+        <app-button 
+          variant="primary" 
+          type="submit"
+          [disabled]="loading || supplierForm.invalid">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>
