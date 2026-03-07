@@ -1,0 +1,300 @@
+.user-management-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      color: #333;
+    }
+  }
+}
+
+.btn-back {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #e0e0e0;
+  }
+
+  i {
+    font-size: 1.2rem;
+    color: #666;
+  }
+}
+
+.filters-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .filter-select {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      min-width: 200px;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: #4CAF50;
+      }
+    }
+  }
+}
+
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+  }
+}
+
+.btn-secondary {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #da190b;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    margin-top: 1rem;
+    color: #666;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #f5f5f5;
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 2px solid #ddd;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #f9f9f9;
+      }
+
+      td {
+        padding: 1rem;
+        color: #333;
+      }
+    }
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &.badge-admin {
+    background: #ff9800;
+    color: white;
+  }
+
+  &.badge-kitchen {
+    background: #9c27b0;
+    color: white;
+  }
+
+  &.badge-waiter {
+    background: #2196f3;
+    color: white;
+  }
+
+  &.badge-customer {
+    background: #607d8b;
+    color: white;
+  }
+
+  &.badge-success {
+    background: #4caf50;
+    color: white;
+  }
+
+  &.badge-warning {
+    background: #ff9800;
+    color: white;
+  }
+
+  &.badge-info {
+    background: #2196f3;
+    color: white;
+  }
+
+  &.badge-danger {
+    background: #f44336;
+    color: white;
+  }
+}
+
+.text-success {
+  color: #4caf50;
+  font-size: 1.2rem;
+}
+
+.text-danger {
+  color: #f44336;
+  font-size: 1.2rem;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &.btn-view {
+    color: #2196f3;
+    &:hover {
+      background: #e3f2fd;
+    }
+  }
+
+  &.btn-edit {
+    color: #ff9800;
+    &:hover {
+      background: #fff3e0;
+    }
+  }
+
+  &.btn-deactivate {
+    color: #f44336;
+    &:hover {
+      background: #ffebee;
+    }
+  }
+
+  &.btn-activate {
+    color: #4caf50;
+    &:hover {
+      background: #e8f5e9;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  color: #999;
+
+  i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.2rem;
+  }
+}

@@ -8,6 +8,7 @@ import { HeaderComponent } from './components/layout/header/header.component';
 import { FooterComponent } from './components/layout/footer/footer.component';
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { MainLayoutComponent } from './components/layout/main-layout/main-layout.component';
+import { NavbarComponent } from './components/layout/navbar/navbar.component';
 
 // UI components
 import { ButtonComponent } from './components/ui/button/button.component';
@@ -30,6 +31,7 @@ import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
     FooterComponent,
     SidebarComponent,
     MainLayoutComponent,
+    NavbarComponent,
     // UI
     ButtonComponent,
     ModalComponent,
@@ -58,6 +60,7 @@ import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
     FooterComponent,
     SidebarComponent,
     MainLayoutComponent,
+    NavbarComponent,
     // UI
     ButtonComponent,
     ModalComponent,

@@ -86,6 +86,30 @@ export class DashboardComponent implements OnInit {
       route: '/inventory/alerts',
       color: '#c0392b',
       roles: [UserRole.ADMIN, UserRole.KITCHEN, UserRole.WAITER]
+    },
+    {
+      title: 'Movimientos de Inventario',
+      description: 'Historial de entradas y salidas',
+      icon: '📊',
+      route: '/inventory/movements',
+      color: '#16a085',
+      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+    },
+    {
+      title: 'Gestión de Usuarios',
+      description: 'Administrar empleados y permisos',
+      icon: '👥',
+      route: '/admin/users',
+      color: '#2c3e50',
+      roles: [UserRole.ADMIN]
+    },
+    {
+      title: 'Auditoría de Seguridad',
+      description: 'Logs y eventos del sistema',
+      icon: '🛡️',
+      route: '/admin/audit-logs',
+      color: '#34495e',
+      roles: [UserRole.ADMIN]
     }
   ];
 

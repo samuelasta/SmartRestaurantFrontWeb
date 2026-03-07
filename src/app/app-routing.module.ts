@@ -23,7 +23,7 @@ const routes: Routes = [
   },
   {
     path: 'admin',
-    redirectTo: '/inventory'
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
   },
   {
     path: 'kitchen',

@@ -167,10 +167,9 @@ export class AuthService {
 
   /**
    * Obtener información del usuario actual
-   * NOTA: Este endpoint debe ser implementado en el backend
    */
-  getCurrentUser(): Observable<User> {
-    return this.httpClient.get<User>('/auth/me');
+  getCurrentUser(): Observable<any> {
+    return this.httpClient.get('/auth/me');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

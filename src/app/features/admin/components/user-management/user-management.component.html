@@ -1,0 +1,125 @@
+<div class="user-management-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="navigateToDashboard()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1>Gestión de Usuarios</h1>
+    </div>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i>
+      Registrar Empleado
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Rol:</label>
+      <select [(ngModel)]="selectedRole" (change)="onRoleFilterChange()" class="filter-select">
+        <option [ngValue]="null">Todos los roles</option>
+        <option *ngFor="let role of roles" [ngValue]="role.value">{{ role.label }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Estado:</label>
+      <select [(ngModel)]="selectedStatus" (change)="onStatusFilterChange()" class="filter-select">
+        <option [ngValue]="null">Todos los estados</option>
+        <option *ngFor="let status of statuses" [ngValue]="status.value">{{ status.label }}</option>
+      </select>
+    </div>
+
+    <button class="btn-secondary" (click)="clearFilters()">
+      <i class="fas fa-times"></i>
+      Limpiar Filtros
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando usuarios...</p>
+  </div>
+
+  <!-- Tabla de usuarios -->
+  <div *ngIf="!loading" class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Email Verificado</th>
+          <th>Cambio de Contraseña</th>
+          <th>Fecha de Creación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="badge" [ngClass]="getRoleBadgeClass(user.role)">
+              {{ user.roleDisplayName }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(user.status)">
+              {{ user.statusDisplayName }}
+            </span>
+          </td>
+          <td>
+            <i *ngIf="user.isEmailVerified" class="fas fa-check-circle text-success"></i>
+            <i *ngIf="!user.isEmailVerified" class="fas fa-times-circle text-danger"></i>
+          </td>
+          <td>
+            <span *ngIf="user.requiresPasswordChange" class="badge badge-warning">Requerido</span>
+            <span *ngIf="!user.requiresPasswordChange" class="badge badge-success">No requerido</span>
+          </td>
+          <td>{{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-view" (click)="viewUserDetail(user.id)" title="Ver detalles">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon btn-edit" (click)="openEditModal(user.id)" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              *ngIf="user.status === UserStatus.ACTIVE" 
+              class="btn-icon btn-deactivate" 
+              (click)="deactivateUser(user.id)" 
+              title="Desactivar">
+              <i class="fas fa-ban"></i>
+            </button>
+            <button 
+              *ngIf="user.status === UserStatus.INACTIVE" 
+              class="btn-icon btn-activate" 
+              (click)="activateUser(user.id)" 
+              title="Activar">
+              <i class="fas fa-check"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="users.length === 0" class="empty-state">
+      <i class="fas fa-users"></i>
+      <p>No se encontraron usuarios</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<app-user-form-modal
+  *ngIf="isModalOpen"
+  [userId]="selectedUserId"
+  (close)="closeModal()"
+  (saved)="onUserSaved()">
+</app-user-form-modal>

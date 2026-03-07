@@ -24,6 +24,7 @@ import { AdditionManagementComponent } from './components/addition-management/ad
 import { AdditionFormModalComponent } from './components/addition-management/addition-form-modal.component';
 import { DailyMenuComponent } from './components/daily-menu/daily-menu.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { InventoryMovementsComponent } from './components/inventory-movements/inventory-movements.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
     AdditionManagementComponent,
     AdditionFormModalComponent,
     DailyMenuComponent,
-    DashboardComponent
+    DashboardComponent,
+    InventoryMovementsComponent
   ],
   imports: [
     CommonModule,

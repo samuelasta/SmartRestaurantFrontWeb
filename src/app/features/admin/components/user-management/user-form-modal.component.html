@@ -1,0 +1,108 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Usuario' : 'Registrar Empleado' }}</h2>
+      <button class="btn-close" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <div class="modal-body">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="firstName">Nombre *</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="form-control"
+            placeholder="Ingrese el nombre"
+            [class.error]="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched"
+          />
+          <span class="error-message" *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched">
+            El nombre es requerido
+          </span>
+        </div>
+
+        <!-- Apellido -->
+        <div class="form-group">
+          <label for="lastName">Apellido *</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="form-control"
+            placeholder="Ingrese el apellido"
+            [class.error]="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched"
+          />
+          <span class="error-message" *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched">
+            El apellido es requerido
+          </span>
+        </div>
+
+        <!-- Email (solo para crear) -->
+        <div class="form-group" *ngIf="!isEditMode">
+          <label for="email">Email *</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="form-control"
+            placeholder="correo@ejemplo.com"
+            [class.error]="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+          />
+          <span class="error-message" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+            <span *ngIf="userForm.get('email')?.errors?.['required']">El email es requerido</span>
+            <span *ngIf="userForm.get('email')?.errors?.['email']">Email inválido</span>
+          </span>
+        </div>
+
+        <!-- Rol (solo para crear) -->
+        <div class="form-group" *ngIf="!isEditMode">
+          <label for="role">Rol *</label>
+          <select
+            id="role"
+            formControlName="role"
+            class="form-control"
+            [class.error]="userForm.get('role')?.invalid && userForm.get('role')?.touched"
+          >
+            <option value="">Seleccione un rol</option>
+            <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+          </select>
+          <span class="error-message" *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+            El rol es requerido
+          </span>
+        </div>
+
+        <!-- Cambiar rol (solo para editar) -->
+        <div class="form-group" *ngIf="isEditMode && currentUser">
+          <label for="newRole">Cambiar Rol</label>
+          <select
+            id="newRole"
+            formControlName="newRole"
+            class="form-control"
+          >
+            <option [value]="currentUser.role">{{ getRoleLabel(currentUser.role) }} (Actual)</option>
+            <option *ngFor="let role of roles" [value]="role.value" [disabled]="role.value === currentUser.role">
+              {{ role.label }}
+            </option>
+          </select>
+          <small class="form-hint">Deje el rol actual si no desea cambiarlo</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="onClose()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="userForm.invalid || loading">
+          <span *ngIf="!loading">{{ isEditMode ? 'Actualizar' : 'Registrar' }}</span>
+          <span *ngIf="loading">
+            <i class="fas fa-spinner fa-spin"></i> Guardando...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -119,42 +119,20 @@ export class LoginComponent implements OnInit {
   }
 
   handleSuccessfulLogin(response: any): void {
-    // Guardar tokens primero
+    // Guardar tokens
     this.storageService.setToken(response.accessToken);
     this.storageService.setRefreshToken(response.refreshToken);
     
     this.notificationService.showSuccess('Inicio de sesión exitoso');
+    this.loading = false;
     
-    // Obtener información del usuario actual
-    this.authService.getCurrentUser().subscribe({
-      next: (user) => {
-        this.storageService.setUser(user);
-        
-        // Redirigir según el rol o URL de retorno
-        if (this.returnUrl) {
-          this.router.navigateByUrl(this.returnUrl);
-        } else {
-          this.roleRedirectService.redirectByRole(
-            user.role as UserRole,
-            response.requiresPasswordChange
-          );
-        }
-        
-        this.loading = false;
-      },
-      error: () => {
-        // Si falla obtener el usuario, aún así redirigir
-        if (this.returnUrl) {
-          this.router.navigateByUrl(this.returnUrl);
-        } else {
-          this.roleRedirectService.redirectByRole(
-            'ADMIN' as UserRole, // Por defecto
-            response.requiresPasswordChange
-          );
-        }
-        this.loading = false;
-      }
-    });
+    // Redirigir directamente sin llamar a /auth/me
+    if (this.returnUrl) {
+      this.router.navigateByUrl(this.returnUrl);
+    } else {
+      // Redirigir al dashboard por defecto
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   togglePasswordVisibility(): void {

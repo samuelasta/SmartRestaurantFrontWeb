@@ -7,6 +7,7 @@ import { VerifyAccountComponent } from './components/verify-account/verify-accou
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 const routes: Routes = [
   {
@@ -37,6 +38,10 @@ const routes: Routes = [
   {
     path: 'change-password',
     component: ChangePasswordComponent
+  },
+  {
+    path: 'profile',
+    component: ProfileComponent
   }
 ];
 

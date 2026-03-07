@@ -1,0 +1,75 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Logo y Título -->
+    <div class="navbar-brand" (click)="navigateToDashboard()">
+      <i class="fas fa-utensils"></i>
+      <span class="brand-name">Restaurant Manager</span>
+    </div>
+
+    <!-- Navegación Principal -->
+    <div class="navbar-menu">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <a routerLink="/inventory" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-box"></i>
+        <span>Inventario</span>
+      </a>
+
+      <a *ngIf="isAdmin()" routerLink="/admin/users" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-users-cog"></i>
+        <span>Administración</span>
+      </a>
+
+      <a *ngIf="isAdmin()" routerLink="/admin/audit-logs" routerLinkActive="active" class="nav-link">
+        <i class="fas fa-shield-alt"></i>
+        <span>Auditoría</span>
+      </a>
+    </div>
+
+    <!-- Usuario -->
+    <div class="navbar-user" *ngIf="user">
+      <div class="user-info" (click)="toggleDropdown()">
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+          <span class="user-role">{{ user.roleDisplayName }}</span>
+        </div>
+        <i class="fas fa-chevron-down dropdown-icon" [class.rotated]="isDropdownOpen"></i>
+      </div>
+
+      <!-- Dropdown Menu -->
+      <div class="dropdown-menu" *ngIf="isDropdownOpen">
+        <a class="dropdown-item" (click)="navigateToProfile()">
+          <i class="fas fa-user-circle"></i>
+          Mi Perfil
+        </a>
+        <a class="dropdown-item" (click)="navigateToDashboard()">
+          <i class="fas fa-home"></i>
+          Dashboard
+        </a>
+        <div class="dropdown-divider"></div>
+        <a *ngIf="isAdmin()" class="dropdown-item" (click)="navigateToAdmin()">
+          <i class="fas fa-users-cog"></i>
+          Gestión de Usuarios
+        </a>
+        <a *ngIf="isAdmin()" class="dropdown-item" (click)="navigateToAudit()">
+          <i class="fas fa-shield-alt"></i>
+          Auditoría
+        </a>
+        <div class="dropdown-divider" *ngIf="isAdmin()"></div>
+        <a class="dropdown-item logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Cerrar Sesión
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Overlay para cerrar el dropdown -->
+<div class="dropdown-overlay" *ngIf="isDropdownOpen" (click)="toggleDropdown()"></div>

@@ -15,6 +15,7 @@ import { DrinkDetailComponent } from './components/drink-detail/drink-detail.com
 import { AdditionManagementComponent } from './components/addition-management/addition-management.component';
 import { DailyMenuComponent } from './components/daily-menu/daily-menu.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { InventoryMovementsComponent } from './components/inventory-movements/inventory-movements.component';
 
 const routes: Routes = [
   {
@@ -81,6 +82,10 @@ const routes: Routes = [
       {
         path: 'daily-menu',
         component: DailyMenuComponent
+      },
+      {
+        path: 'movements',
+        component: InventoryMovementsComponent
       }
     ]
   }

@@ -1,0 +1,131 @@
+<div class="audit-logs-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="navigateToDashboard()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1>Auditoría de Seguridad</h1>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Tipo de Vista:</label>
+      <select [(ngModel)]="viewType" (change)="onViewTypeChange()" class="filter-select">
+        <option value="all">Todos los logs</option>
+        <option value="failed">Eventos fallidos</option>
+        <option value="critical">Eventos críticos</option>
+        <option value="byEventType">Por tipo de evento</option>
+        <option value="byDateRange">Por rango de fechas</option>
+      </select>
+    </div>
+
+    <!-- Filtro por tipo de evento -->
+    <div class="filter-group" *ngIf="viewType === 'byEventType'">
+      <label>Tipo de Evento:</label>
+      <select [(ngModel)]="selectedEventType" (change)="loadLogs()" class="filter-select">
+        <option [ngValue]="null">Seleccione un tipo</option>
+        <option *ngFor="let event of eventTypes" [ngValue]="event.value">{{ event.label }}</option>
+      </select>
+    </div>
+
+    <!-- Filtro por rango de fechas -->
+    <div class="filter-group" *ngIf="viewType === 'byDateRange'">
+      <label>Fecha Inicio:</label>
+      <input type="date" [(ngModel)]="startDate" (change)="loadLogs()" class="filter-input" />
+    </div>
+
+    <div class="filter-group" *ngIf="viewType === 'byDateRange'">
+      <label>Fecha Fin:</label>
+      <input type="date" [(ngModel)]="endDate" (change)="loadLogs()" class="filter-input" />
+    </div>
+
+    <button class="btn-refresh" (click)="loadLogs()" title="Refrescar">
+      <i class="fas fa-sync-alt"></i>
+      Refrescar
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando logs de auditoría...</p>
+  </div>
+
+  <!-- Tabla de logs -->
+  <div *ngIf="!loading" class="table-container">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha/Hora</th>
+          <th>Usuario</th>
+          <th>Evento</th>
+          <th>Estado</th>
+          <th>IP</th>
+          <th>Detalles</th>
+          <th>Crítico</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs" [class.critical-row]="log.critical" [class.failed-row]="!log.success">
+          <td>{{ log.id }}</td>
+          <td>{{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+          <td>
+            <div class="user-info">
+              <span class="user-email">{{ log.userEmail || 'N/A' }}</span>
+              <span class="user-id" *ngIf="log.userId">(ID: {{ log.userId }})</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getEventBadgeClass(log.eventType)">
+              {{ log.eventTypeName }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [class.status-success]="log.success" [class.status-failed]="!log.success">
+              <i [class.fa-check-circle]="log.success" [class.fa-times-circle]="!log.success" class="fas"></i>
+              {{ log.success ? 'Exitoso' : 'Fallido' }}
+            </span>
+          </td>
+          <td>{{ log.ipAddress || 'N/A' }}</td>
+          <td>
+            <div class="details-cell">
+              <span class="details-text" [title]="log.details || ''">
+                {{ log.details || 'Sin detalles' }}
+              </span>
+              <span class="error-message" *ngIf="log.errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ log.errorMessage }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <i *ngIf="log.critical" class="fas fa-exclamation-circle critical-icon" title="Evento crítico"></i>
+            <span *ngIf="!log.critical">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="logs.length === 0" class="empty-state">
+      <i class="fas fa-clipboard-list"></i>
+      <p>No se encontraron logs de auditoría</p>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination" *ngIf="!loading && logs.length > 0">
+    <button class="btn-page" (click)="previousPage()" [disabled]="currentPage === 0">
+      <i class="fas fa-chevron-left"></i>
+      Anterior
+    </button>
+    <span class="page-info">Página {{ currentPage + 1 }}</span>
+    <button class="btn-page" (click)="nextPage()" [disabled]="logs.length < pageSize">
+      Siguiente
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>

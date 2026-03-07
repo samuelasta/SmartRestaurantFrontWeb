@@ -1,0 +1,75 @@
+<div class="movements-container">
+  <div class="movements-header">
+    <h1>Movimientos de Inventario</h1>
+    <p>Historial de entradas y salidas de productos</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchChange()"
+        placeholder="Buscar por producto, usuario o razón..."
+        class="search-input">
+    </div>
+
+    <div class="filter-buttons">
+      <button 
+        [class.active]="filterType === 'ALL'"
+        (click)="onFilterTypeChange('ALL')"
+        class="filter-btn">
+        Todos
+      </button>
+      <button 
+        [class.active]="filterType === 'ENTRY'"
+        (click)="onFilterTypeChange('ENTRY')"
+        class="filter-btn filter-entry">
+        Entradas
+      </button>
+      <button 
+        [class.active]="filterType === 'EXIT'"
+        (click)="onFilterTypeChange('EXIT')"
+        class="filter-btn filter-exit">
+        Salidas
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+
+  <div *ngIf="!loading && filteredMovements.length === 0" class="empty-state">
+    <p>No se encontraron movimientos de inventario</p>
+  </div>
+
+  <div *ngIf="!loading && filteredMovements.length > 0" class="movements-table-container">
+    <table class="movements-table">
+      <thead>
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Tipo</th>
+          <th>Producto ID</th>
+          <th>Cantidad</th>
+          <th>Usuario</th>
+          <th>Razón</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let movement of filteredMovements">
+          <td>{{ formatDate(movement.timeAt) }}</td>
+          <td>
+            <span [class]="'badge ' + getTypeClass(movement.type)">
+              {{ getTypeLabel(movement.type) }}
+            </span>
+          </td>
+          <td class="product-id">{{ movement.productId }}</td>
+          <td class="quantity">{{ movement.weight }} kg</td>
+          <td>{{ movement.userName }}</td>
+          <td class="reason">{{ movement.reason }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
