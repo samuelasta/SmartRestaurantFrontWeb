@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.smartrestaurante.com/api',
+  apiUrl: 'https://smartrestaurant-tbbb.onrender.com',
   apiTimeout: 30000
 };
