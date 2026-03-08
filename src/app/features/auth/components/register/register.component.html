@@ -17,16 +17,14 @@
       <app-form-field label="Contraseña" [required]="true">
         <input type="password" formControlName="password" placeholder="********">
       </app-form-field>
+      <p class="password-hint">La contraseña debe tener al menos 8 caracteres, incluir una mayúscula, una minúscula, un
+        número y un carácter especial.</p>
 
       <app-form-field label="Confirmar Contraseña" [required]="true">
         <input type="password" formControlName="confirmPassword" placeholder="********">
       </app-form-field>
 
-      <app-button 
-        type="submit" 
-        variant="primary" 
-        [disabled]="registerForm.invalid"
-        [loading]="loading">
+      <app-button type="submit" variant="primary" [disabled]="registerForm.invalid" [loading]="loading">
         Registrarse
       </app-button>
     </form>

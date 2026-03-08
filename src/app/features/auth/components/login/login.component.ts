@@ -233,46 +233,6 @@ export class LoginComponent implements OnInit {
     // que maneja el flujo automáticamente y emite a través de authState.
   }
 
-  loginWithFacebook(): void {
-    this.loading = true;
-    this.socialAuthService.loginWithFacebook().subscribe({
-      next: (socialData) => {
-        this.authService.socialLogin(socialData).subscribe({
-          next: (response) => {
-            this.handleSuccessfulLogin(response);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        this.notificationService.showError(error.message);
-        this.loading = false;
-      }
-    });
-  }
-
-  loginWithGitHub(): void {
-    this.loading = true;
-    this.socialAuthService.loginWithGitHub().subscribe({
-      next: (socialData) => {
-        this.authService.socialLogin(socialData).subscribe({
-          next: (response) => {
-            this.handleSuccessfulLogin(response);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        this.notificationService.showError(error.message);
-        this.loading = false;
-      }
-    });
-  }
-
   cancel2FA(): void {
     this.requires2FA = false;
     this.pendingEmail = '';
