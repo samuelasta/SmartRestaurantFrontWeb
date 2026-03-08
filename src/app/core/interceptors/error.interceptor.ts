@@ -12,7 +12,7 @@ export class ErrorInterceptor implements HttpInterceptor {
   constructor(
     private router: Router,
     private notificationService: NotificationService
-  ) {}
+  ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
@@ -25,7 +25,7 @@ export class ErrorInterceptor implements HttpInterceptor {
 
         const errorMessage = this.extractErrorMessage(error);
         this.handleErrorByStatus(error.status, errorMessage);
-        
+
         return throwError(() => error);
       })
     );
@@ -44,23 +44,53 @@ export class ErrorInterceptor implements HttpInterceptor {
 
     // Intentar extraer el mensaje del backend
     const errorResponse = error.error as ErrorResponse;
-    
+    let message = '';
+
     // Prioridad 1: mensaje del backend
     if (errorResponse?.message) {
+      message = errorResponse.message;
       // Si hay detalles adicionales, agregarlos
       if (errorResponse.details && errorResponse.details.length > 0) {
-        return `${errorResponse.message}: ${errorResponse.details.join(', ')}`;
+        message = `${message}: ${errorResponse.details.join(', ')}`;
       }
-      return errorResponse.message;
     }
-
     // Prioridad 2: error como string directo
-    if (typeof error.error === 'string') {
-      return error.error;
+    else if (typeof error.error === 'string') {
+      message = error.error;
+    }
+    // Prioridad 3: mensaje genérico según código HTTP
+    else {
+      message = this.getDefaultErrorMessage(error.status);
     }
 
-    // Prioridad 3: mensaje genérico según código HTTP
-    return this.getDefaultErrorMessage(error.status);
+    return this.sanitizeErrorMessage(message);
+  }
+
+  private sanitizeErrorMessage(message: string): string {
+    if (!message) return message;
+
+    const technicalKeywords = [
+      'could not execute statement',
+      'ERROR:',
+      'duplicate key',
+      'SQL',
+      'Hibernate',
+      'constraint',
+      'violates unique',
+      'insert into',
+      'update ',
+      'delete from'
+    ];
+
+    const isTechnical = technicalKeywords.some(keyword =>
+      message.toLowerCase().includes(keyword.toLowerCase())
+    );
+
+    if (isTechnical) {
+      return 'Ha ocurrido un error al procesar la solicitud. Por favor, intente nuevamente.';
+    }
+
+    return message;
   }
 
   private getDefaultErrorMessage(status: number): string {
