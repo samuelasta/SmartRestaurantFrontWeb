@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
   loading = false;
   showPassword = false;
   returnUrl: string = '';
+  justLoggedOut = false;
 
   // Estado para 2FA
   requires2FA = false;
@@ -33,13 +34,30 @@ export class LoginComponent implements OnInit {
     private route: ActivatedRoute,
     private notificationService: NotificationService,
     private storageService: StorageService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForms();
-    
-    // Obtener URL de retorno si existe
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
+
+    // Obtener URL de retorno o flag de logout
+    const params = this.route.snapshot.queryParams;
+    this.returnUrl = params['returnUrl'] || '';
+    this.justLoggedOut = params['logout'] === 'true';
+
+    // Suscribirse al estado de autenticación social (especialmente para Google GSI)
+    this.socialAuthService.authState.subscribe({
+      next: (user) => {
+        if (user && user.provider === 'GOOGLE' && !this.justLoggedOut) {
+          console.log('Google user received from authState:', user);
+          this.handleGoogleUser(user);
+        } else if (user) {
+          console.log('Social user active but ignoring due to logout flag or provider');
+        }
+      },
+      error: (err) => {
+        console.error('Social auth state error:', err);
+      }
+    });
   }
 
   initForms(): void {
@@ -59,11 +77,11 @@ export class LoginComponent implements OnInit {
       this.authService.login(this.loginForm.value).subscribe({
         next: (response: any) => {
           console.log('Login response:', response);
-          
+
           // Primero verificar si requiere 2FA
           // El backend devuelve '2faRequired' (no 'is2faRequired')
           const requires2FA = response && (response.is2faRequired === true || response['2faRequired'] === true);
-          
+
           if (requires2FA) {
             // Requiere verificación 2FA
             this.requires2FA = true;
@@ -119,19 +137,64 @@ export class LoginComponent implements OnInit {
   }
 
   handleSuccessfulLogin(response: any): void {
-    // Guardar tokens
+    // Guardar tokens PRIMERO
     this.storageService.setToken(response.accessToken);
     this.storageService.setRefreshToken(response.refreshToken);
-    
+
+    // Decodificar el token JWT para obtener el rol
+    const tokenPayload = this.decodeToken(response.accessToken);
+    const userRole = tokenPayload?.role || UserRole.CUSTOMER;
+
     this.notificationService.showSuccess('Inicio de sesión exitoso');
     this.loading = false;
-    
-    // Redirigir directamente sin llamar a /auth/me
-    if (this.returnUrl) {
-      this.router.navigateByUrl(this.returnUrl);
-    } else {
-      // Redirigir al dashboard por defecto
-      this.router.navigate(['/dashboard']);
+
+    // Pequeño delay para asegurar que el token se guardó
+    setTimeout(() => {
+      // Obtener información completa del usuario desde el backend
+      this.authService.getCurrentUser().subscribe({
+        next: (userInfo) => {
+          // Guardar información completa del usuario
+          this.storageService.setUser(userInfo);
+
+          // Redirigir según el rol del usuario
+          if (this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            // Usar RoleRedirectService para redirigir según el rol
+            this.roleRedirectService.redirectByRole(userRole, response.requiresPasswordChange || false);
+          }
+        },
+        error: (err) => {
+          console.error('Error al obtener información del usuario:', err);
+          // Si falla, guardar información básica del token
+          this.storageService.setUser({
+            email: tokenPayload?.sub || this.loginForm.value.email,
+            role: userRole,
+            permissions: tokenPayload?.permissions || []
+          });
+
+          // Redirigir de todas formas
+          if (this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.roleRedirectService.redirectByRole(userRole, response.requiresPasswordChange || false);
+          }
+        }
+      });
+    }, 100); // 100ms de delay
+  }
+
+  /**
+   * Decodifica un token JWT
+   */
+  private decodeToken(token: string): any {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      return JSON.parse(decoded);
+    } catch (error) {
+      console.error('Error decodificando token:', error);
+      return null;
     }
   }
 
@@ -143,64 +206,31 @@ export class LoginComponent implements OnInit {
   // SOCIAL LOGIN
   // ═══════════════════════════════════════════════════════════════════════════
 
+  private handleGoogleUser(user: any): void {
+    this.loading = true;
+    const socialData = {
+      provider: 'GOOGLE' as const,
+      accessToken: user.idToken, // GSI usa idToken para verificar en el backend
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profilePicture: user.photoUrl
+    };
+
+    this.authService.socialLogin(socialData).subscribe({
+      next: (response) => {
+        this.handleSuccessfulLogin(response);
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  // El método manual loginWithGoogle se mantiene por compatibilidad de tipos pero ya no se usa para GSI
   loginWithGoogle(): void {
-    this.loading = true;
-    this.socialAuthService.loginWithGoogle().subscribe({
-      next: (socialData) => {
-        this.authService.socialLogin(socialData).subscribe({
-          next: (response) => {
-            this.handleSuccessfulLogin(response);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        this.notificationService.showError(error.message);
-        this.loading = false;
-      }
-    });
-  }
-
-  loginWithFacebook(): void {
-    this.loading = true;
-    this.socialAuthService.loginWithFacebook().subscribe({
-      next: (socialData) => {
-        this.authService.socialLogin(socialData).subscribe({
-          next: (response) => {
-            this.handleSuccessfulLogin(response);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        this.notificationService.showError(error.message);
-        this.loading = false;
-      }
-    });
-  }
-
-  loginWithGitHub(): void {
-    this.loading = true;
-    this.socialAuthService.loginWithGitHub().subscribe({
-      next: (socialData) => {
-        this.authService.socialLogin(socialData).subscribe({
-          next: (response) => {
-            this.handleSuccessfulLogin(response);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      },
-      error: (error) => {
-        this.notificationService.showError(error.message);
-        this.loading = false;
-      }
-    });
+    // Con las nuevas versiones de Google Identity Services, se usa el componente <as-google-signin-button>
+    // que maneja el flujo automáticamente y emite a través de authState.
   }
 
   cancel2FA(): void {

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '@core/guards/auth.guard';
+import { RoleGuard } from '@core/guards/role.guard';
 
 import { InventoryListComponent } from './components/inventory-list/inventory-list.component';
 import { InventoryDetailComponent } from './components/inventory-detail/inventory-detail.component';
@@ -30,62 +31,91 @@ const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent
+        // Sin RoleGuard - accesible para todos los usuarios autenticados
       },
       {
         path: 'list',
-        component: InventoryListComponent
+        component: InventoryListComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['product:read'] }
       },
       {
         path: 'detail/:id',
-        component: InventoryDetailComponent
+        component: InventoryDetailComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['product:read'] }
       },
       {
         path: 'new',
-        component: InventoryFormComponent
+        component: InventoryFormComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['product:write'] }
       },
       {
         path: 'edit/:id',
-        component: InventoryFormComponent
+        component: InventoryFormComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['product:write'] }
       },
       {
         path: 'categories',
-        component: CategoryManagementComponent
+        component: CategoryManagementComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['category:read'] }
       },
       {
         path: 'alerts',
-        component: StockAlertComponent
+        component: StockAlertComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['stock_alert:read'] }
       },
       {
         path: 'suppliers',
-        component: SupplierManagementComponent
+        component: SupplierManagementComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['supplier:read'] }
       },
       {
         path: 'dishes',
-        component: DishManagementComponent
+        component: DishManagementComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['dish:read'] }
       },
       {
         path: 'dishes/:id',
-        component: DishDetailComponent
+        component: DishDetailComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['dish:read'] }
       },
       {
         path: 'drinks',
-        component: DrinkManagementComponent
+        component: DrinkManagementComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['drink:read'] }
       },
       {
         path: 'drinks/:id',
-        component: DrinkDetailComponent
+        component: DrinkDetailComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['drink:read'] }
       },
       {
         path: 'additions',
-        component: AdditionManagementComponent
+        component: AdditionManagementComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['addition:read'] }
       },
       {
         path: 'daily-menu',
-        component: DailyMenuComponent
+        component: DailyMenuComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['daily_menu:read'] }
       },
       {
         path: 'movements',
-        component: InventoryMovementsComponent
+        component: InventoryMovementsComponent,
+        canActivate: [RoleGuard],
+        data: { permissions: ['inventory_movement:read'] }
       }
     ]
   }

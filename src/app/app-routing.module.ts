@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AccessDeniedComponent } from '@shared/components/access-denied/access-denied.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,10 @@ const routes: Routes = [
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
   },
   {
+    path: 'customer',
+    loadChildren: () => import('./features/customer/customer.module').then(m => m.CustomerModule)
+  },
+  {
     path: 'kitchen',
     redirectTo: '/inventory'
   },
@@ -34,8 +39,8 @@ const routes: Routes = [
     redirectTo: '/inventory'
   },
   {
-    path: 'customer',
-    redirectTo: '/inventory'
+    path: 'access-denied',
+    component: AccessDeniedComponent
   },
   {
     path: '**',

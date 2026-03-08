@@ -1,32 +1,31 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, throwError, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { SocialLoginRequest } from '../models/social-login-request.model';
+import { SocialAuthService as BaseSocialAuthService, GoogleLoginProvider, SocialUser } from '@abacritt/angularx-social-login';
 
 /**
  * Servicio para manejar autenticación con proveedores sociales
- * 
- * IMPORTANTE: Este servicio requiere la instalación de SDKs de terceros:
- * - Google: npm install @abacritt/angularx-social-login
- * - Facebook: Facebook SDK (script en index.html)
- * - GitHub: OAuth flow manual
  */
 @Injectable({
   providedIn: 'root'
 })
 export class SocialAuthService {
 
-  constructor() {}
+  constructor(private socialAuthService: BaseSocialAuthService) { }
+
+  /**
+   * Observable que emite cuando el estado de autenticación social cambia
+   */
+  get authState(): Observable<SocialUser> {
+    return this.socialAuthService.authState;
+  }
 
   /**
    * Inicializa el login con Google
-   * Requiere: @abacritt/angularx-social-login
    */
   loginWithGoogle(): Observable<SocialLoginRequest> {
-    // TODO: Implementar con Google SDK
-    // Ejemplo de implementación:
-    /*
-    return from(this.googleAuthService.signIn()).pipe(
+    return from(this.socialAuthService.signIn(GoogleLoginProvider.PROVIDER_ID)).pipe(
       map(user => ({
         provider: 'GOOGLE' as const,
         accessToken: user.idToken,
@@ -34,11 +33,12 @@ export class SocialAuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         profilePicture: user.photoUrl
-      }))
+      })),
+      catchError(error => {
+        console.error('Error in Google Login:', error);
+        return throwError(() => new Error('Error al iniciar sesión con Google'));
+      })
     );
-    */
-    
-    return throwError(() => new Error('Google Login no implementado. Instalar @abacritt/angularx-social-login'));
   }
 
   /**
@@ -68,7 +68,7 @@ export class SocialAuthService {
       }, { scope: 'email,public_profile' });
     }));
     */
-    
+
     return throwError(() => new Error('Facebook Login no implementado. Configurar Facebook SDK'));
   }
 
@@ -83,16 +83,27 @@ export class SocialAuthService {
     // 2. GitHub redirige de vuelta con un code
     // 3. Intercambiar code por access_token en el backend
     // 4. Obtener información del usuario con el access_token
-    
+
     return throwError(() => new Error('GitHub Login no implementado. Configurar OAuth flow'));
   }
 
   /**
-   * Cierra sesión de Google
+   * Cierra sesión de Google y otros proveedores sociales
+   */
+  signOut(): Observable<void> {
+    return from(this.socialAuthService.signOut()).pipe(
+      catchError(error => {
+        console.warn('Error signing out from social provider:', error);
+        return of(undefined);
+      })
+    );
+  }
+
+  /**
+   * Cierra sesión de Google (específico)
    */
   logoutGoogle(): Observable<void> {
-    // TODO: Implementar logout de Google
-    return from(Promise.resolve());
+    return this.signOut();
   }
 
   /**

@@ -1,0 +1,46 @@
+<div class="customer-home-container">
+  <div class="welcome-card">
+    <div class="welcome-icon">👋</div>
+    <h1>¡Bienvenido!</h1>
+    <h2>{{ userName }}</h2>
+    <p class="user-email">{{ userEmail }}</p>
+    
+    <div class="info-section">
+      <div class="info-icon">ℹ️</div>
+      <p>Esta es tu área de cliente. Actualmente no tienes acceso al panel administrativo del restaurante.</p>
+      <p>Si necesitas acceso a funcionalidades adicionales, contacta con el administrador del sistema.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" (click)="logout()">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="features-preview">
+    <h3>Próximamente disponible:</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🍽️</div>
+        <h4>Ver Menú</h4>
+        <p>Consulta nuestro menú completo</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛒</div>
+        <h4>Hacer Pedidos</h4>
+        <p>Realiza tus pedidos en línea</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📜</div>
+        <h4>Historial</h4>
+        <p>Revisa tus pedidos anteriores</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <h4>Favoritos</h4>
+        <p>Guarda tus platos favoritos</p>
+      </div>
+    </div>
+  </div>
+</div>

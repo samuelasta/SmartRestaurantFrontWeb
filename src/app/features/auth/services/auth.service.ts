@@ -12,6 +12,7 @@ import { ChangePasswordRequest } from '../models/change-password-request.model';
 import { SocialLoginRequest } from '../models/social-login-request.model';
 import { User } from '../models/user.model';
 import { RegisterEmployeeRequest } from '../models/register-employee-request.model';
+import { SocialAuthService } from './social-auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +21,9 @@ export class AuthService {
 
   constructor(
     private httpClient: HttpClientService,
-    private storageService: StorageService
-  ) {}
+    private storageService: StorageService,
+    private socialAuthService: SocialAuthService
+  ) { }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // AUTENTICACIÓN BÁSICA
@@ -46,14 +48,14 @@ export class AuthService {
    * Registro público (solo para CUSTOMER)
    */
   register(data: RegisterRequest): Observable<string> {
-    return this.httpClient.post<string>('/auth/register', data);
+    return this.httpClient.post<string>('/auth/register', data, { responseType: 'text' as 'json' });
   }
 
   /**
    * Verificación de email después del registro
    */
   verifyEmail(request: VerifyRequest): Observable<string> {
-    return this.httpClient.post<string>('/auth/verify-email', request);
+    return this.httpClient.post<string>('/auth/verify-email', request, { responseType: 'text' as 'json' });
   }
 
   /**
@@ -61,7 +63,11 @@ export class AuthService {
    */
   logout(): Observable<string> {
     const refreshToken = this.storageService.getRefreshToken();
-    return this.httpClient.post<string>('/auth/logout', { refreshToken }).pipe(
+
+    // Cerrar sesión social si existe
+    this.socialAuthService.signOut().subscribe();
+
+    return this.httpClient.post<string>('/auth/logout', { refreshToken }, { responseType: 'text' as 'json' }).pipe(
       tap(() => {
         this.storageService.clearAll();
       }),
@@ -81,28 +87,36 @@ export class AuthService {
    * Solicitar código de recuperación de contraseña
    */
   forgotPassword(email: string): Observable<string> {
-    return this.httpClient.post<string>('/auth/forgot-password', { email });
+    return this.httpClient.post<string>('/auth/forgot-password', { email }, { responseType: 'text' as 'json' });
   }
 
   /**
    * Restablecer contraseña con código OTP
    */
   resetPassword(request: ResetPasswordRequest): Observable<string> {
-    return this.httpClient.post<string>('/auth/reset-password', request);
+    return this.httpClient.post<string>('/auth/reset-password', request, { responseType: 'text' as 'json' });
   }
 
   /**
    * Solicitar cambio de contraseña voluntario (envía OTP)
    */
   requestPasswordChange(email: string): Observable<string> {
-    return this.httpClient.post<string>('/auth/request-password-change', { email });
+    return this.httpClient.post<string>('/auth/request-password-change', { email }, { responseType: 'text' as 'json' });
   }
 
   /**
    * Cambiar contraseña (requiere contraseña actual y OTP)
    */
   changePassword(request: ChangePasswordRequest): Observable<string> {
-    return this.httpClient.post<string>('/auth/change-password', request);
+    return this.httpClient.post<string>('/auth/change-password', request, { responseType: 'text' as 'json' });
+  }
+
+  /**
+   * Cambiar contraseña en primer login (sin OTP ni contraseña actual)
+   * Mantiene la sesión activa devolviendo nuevos tokens JWT
+   */
+  changePasswordFirstLogin(request: { email: string; newPassword: string; confirmPassword: string }): Observable<AuthResponse> {
+    return this.httpClient.post<AuthResponse>('/auth/change-password-first-login', request);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -132,7 +146,7 @@ export class AuthService {
    * Desbloquear cuenta con código OTP
    */
   unlockAccount(request: VerifyRequest): Observable<string> {
-    return this.httpClient.post<string>('/auth/unlock-account', request);
+    return this.httpClient.post<string>('/auth/unlock-account', request, { responseType: 'text' as 'json' });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -158,7 +172,7 @@ export class AuthService {
    * Requiere rol ADMIN
    */
   registerEmployee(data: RegisterEmployeeRequest): Observable<string> {
-    return this.httpClient.post<string>('/admin/register-employee', data);
+    return this.httpClient.post<string>('/admin/register-employee', data, { responseType: 'text' as 'json' });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -196,7 +210,7 @@ export class AuthService {
   private handleSuccessfulAuth(response: AuthResponse): void {
     this.storageService.setToken(response.accessToken);
     this.storageService.setRefreshToken(response.refreshToken);
-    
+
     // Guardar flags importantes
     if (response.requiresPasswordChange) {
       this.storageService.setItem('requiresPasswordChange', 'true');

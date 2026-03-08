@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { RoleRedirectService } from '../../services/role-redirect.service';
 import { NotificationService } from '@core/services/notification.service';
 import { StorageService } from '@core/services/storage.service';
 import { CustomValidators } from '@shared/validators/custom-validators';
+import { UserRole } from '../../models/user-role.enum';
 
 @Component({
   selector: 'app-change-password',
@@ -16,28 +18,45 @@ export class ChangePasswordComponent implements OnInit {
   loading = false;
   otpRequested = false;
   userEmail = '';
+  isForcedChange = false; // Indica si es cambio obligatorio en primer login
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
+    private roleRedirectService: RoleRedirectService,
     private notificationService: NotificationService,
     private storageService: StorageService
   ) {}
 
   ngOnInit(): void {
-    this.initForm();
     const user = this.storageService.getUser();
     this.userEmail = user?.email || '';
+    
+    // Verificar si es un cambio forzado ANTES de inicializar el formulario
+    this.route.queryParams.subscribe(params => {
+      this.isForcedChange = params['forced'] === 'true';
+      this.initForm(); // Inicializar formulario DESPUÉS de obtener el parámetro
+    });
   }
 
   initForm(): void {
-    this.changePasswordForm = this.fb.group({
-      currentPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(8), CustomValidators.passwordStrength()]],
-      confirmPassword: ['', [Validators.required]],
-      otp: ['', []] // Inicialmente no requerido
-    });
+    if (this.isForcedChange) {
+      // Formulario simplificado para primer login (sin contraseña actual ni OTP)
+      this.changePasswordForm = this.fb.group({
+        newPassword: ['', [Validators.required, Validators.minLength(8), CustomValidators.passwordStrength()]],
+        confirmPassword: ['', [Validators.required]]
+      });
+    } else {
+      // Formulario completo para cambio voluntario
+      this.changePasswordForm = this.fb.group({
+        currentPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(8), CustomValidators.passwordStrength()]],
+        confirmPassword: ['', [Validators.required]],
+        otp: ['', []] // Inicialmente no requerido
+      });
+    }
 
     this.changePasswordForm.get('confirmPassword')?.setValidators([
       Validators.required,
@@ -68,28 +87,63 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.changePasswordForm.valid && this.otpRequested) {
+    if (this.changePasswordForm.valid) {
       this.loading = true;
-      const { currentPassword, newPassword, otp } = this.changePasswordForm.value;
-      
-      const request = {
-        email: this.userEmail,
-        currentPassword,
-        newPassword,
-        otp
-      };
-      
-      this.authService.changePassword(request).subscribe({
-        next: () => {
-          this.notificationService.showSuccess('Contraseña cambiada exitosamente');
-          this.router.navigate(['/']);
-        },
-        error: () => {
+
+      if (this.isForcedChange) {
+        // Cambio de contraseña en primer login (simplificado)
+        const { newPassword, confirmPassword } = this.changePasswordForm.value;
+        
+        const request = {
+          email: this.userEmail,
+          newPassword,
+          confirmPassword
+        };
+        
+        this.authService.changePasswordFirstLogin(request).subscribe({
+          next: (response) => {
+            // Actualizar tokens en el storage
+            this.storageService.setToken(response.accessToken);
+            this.storageService.setRefreshToken(response.refreshToken);
+            
+            this.notificationService.showSuccess('Contraseña cambiada exitosamente');
+            
+            // Redirigir al dashboard según el rol
+            const user = this.storageService.getUser();
+            const userRole = user?.role || UserRole.CUSTOMER;
+            this.roleRedirectService.redirectByRole(userRole, false);
+          },
+          error: () => {
+            this.loading = false;
+          }
+        });
+      } else {
+        // Cambio de contraseña voluntario (requiere OTP)
+        if (!this.otpRequested) {
+          this.notificationService.showWarning('Primero debes solicitar el código OTP');
           this.loading = false;
+          return;
         }
-      });
-    } else if (!this.otpRequested) {
-      this.notificationService.showWarning('Primero debes solicitar el código OTP');
+
+        const { currentPassword, newPassword, otp } = this.changePasswordForm.value;
+        
+        const request = {
+          email: this.userEmail,
+          currentPassword,
+          newPassword,
+          otp
+        };
+        
+        this.authService.changePassword(request).subscribe({
+          next: () => {
+            this.notificationService.showSuccess('Contraseña cambiada exitosamente');
+            this.router.navigate(['/']);
+          },
+          error: () => {
+            this.loading = false;
+          }
+        });
+      }
     }
   }
 }

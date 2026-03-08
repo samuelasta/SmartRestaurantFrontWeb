@@ -19,7 +19,7 @@ export class HeaderComponent implements OnInit {
     private storageService: StorageService,
     private authService: AuthService,
     private notificationService: NotificationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.checkUserStatus();
@@ -28,7 +28,7 @@ export class HeaderComponent implements OnInit {
   checkUserStatus(): void {
     const token = this.storageService.getToken();
     this.isLoggedIn = !!token;
-    
+
     if (this.isLoggedIn) {
       const user = this.storageService.getUser();
       if (user) {
@@ -54,12 +54,12 @@ export class HeaderComponent implements OnInit {
     this.authService.logout().subscribe({
       next: () => {
         this.notificationService.showSuccess('Sesión cerrada correctamente');
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth/login'], { queryParams: { logout: 'true' } });
       },
       error: () => {
         // Even if API fails, clear local storage
         this.storageService.clearAll();
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/auth/login'], { queryParams: { logout: 'true' } });
       }
     });
   }

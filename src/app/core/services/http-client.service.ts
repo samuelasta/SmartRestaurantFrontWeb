@@ -15,8 +15,8 @@ export class HttpClientService {
     return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params });
   }
 
-  post<T>(endpoint: string, body: any): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}${endpoint}`, body);
+  post<T>(endpoint: string, body: any, options?: any): Observable<T> {
+    return this.http.post(`${this.apiUrl}${endpoint}`, body, options) as Observable<T>;
   }
 
   put<T>(endpoint: string, body: any): Observable<T> {

@@ -16,9 +16,12 @@ import { ModalComponent } from './components/ui/modal/modal.component';
 import { TableComponent } from './components/ui/table/table.component';
 import { FormFieldComponent } from './components/ui/form-field/form-field.component';
 import { LoadingSpinnerComponent } from './components/ui/loading-spinner/loading-spinner.component';
+import { ToastComponent } from './components/ui/toast/toast.component';
+import { AccessDeniedComponent } from './components/access-denied/access-denied.component';
 
 // Directives
 import { HasRoleDirective } from './directives/has-role.directive';
+import { HasPermissionDirective } from './directives/has-permission.directive';
 
 // Pipes
 import { DateFormatPipe } from './pipes/date-format.pipe';
@@ -38,8 +41,11 @@ import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
     TableComponent,
     FormFieldComponent,
     LoadingSpinnerComponent,
+    ToastComponent,
+    AccessDeniedComponent,
     // Directives
     HasRoleDirective,
+    HasPermissionDirective,
     // Pipes
     DateFormatPipe,
     CurrencyFormatPipe
@@ -67,8 +73,11 @@ import { CurrencyFormatPipe } from './pipes/currency-format.pipe';
     TableComponent,
     FormFieldComponent,
     LoadingSpinnerComponent,
+    ToastComponent,
+    AccessDeniedComponent,
     // Directives
     HasRoleDirective,
+    HasPermissionDirective,
     // Pipes
     DateFormatPipe,
     CurrencyFormatPipe
