@@ -4,4 +4,6 @@ export interface ErrorResponse {
   error: string;
   message: string;
   path: string;
+  details?: string[];
+  code?: string;
 }

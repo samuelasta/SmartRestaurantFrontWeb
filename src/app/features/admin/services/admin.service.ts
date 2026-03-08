@@ -12,18 +12,16 @@ import { ChangeRoleRequest } from '../models/change-role-request.model';
   providedIn: 'root'
 })
 export class AdminService {
-  private readonly API_URL = '/api/admin';
-
   constructor(private http: HttpClientService) {}
 
   // Registrar empleado
-  registerEmployee(request: RegisterEmployeeRequest): Observable<any> {
-    return this.http.post(`${this.API_URL}/register-employee`, request);
+  registerEmployee(request: RegisterEmployeeRequest): Observable<string> {
+    return this.http.post<string>('/admin/register-employee', request, { responseType: 'text' as 'json' });
   }
 
   // Listar usuarios con filtros opcionales
-  getUsers(role?: UserRole, status?: UserStatus): Observable<any> {
-    let url = `${this.API_URL}/users`;
+  getUsers(role?: UserRole, status?: UserStatus): Observable<User[]> {
+    let url = '/admin/users';
     const params: string[] = [];
     
     if (role) params.push(`role=${role}`);
@@ -33,31 +31,31 @@ export class AdminService {
       url += `?${params.join('&')}`;
     }
     
-    return this.http.get(url);
+    return this.http.get<User[]>(url);
   }
 
   // Obtener usuario por ID
-  getUserById(id: number): Observable<any> {
-    return this.http.get(`${this.API_URL}/users/${id}`);
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`/admin/users/${id}`);
   }
 
   // Actualizar usuario
-  updateUser(id: number, request: UpdateUserRequest): Observable<any> {
-    return this.http.put(`${this.API_URL}/users/${id}`, request);
+  updateUser(id: number, request: UpdateUserRequest): Observable<User> {
+    return this.http.put<User>(`/admin/users/${id}`, request);
   }
 
   // Cambiar rol
-  changeRole(id: number, request: ChangeRoleRequest): Observable<any> {
-    return this.http.patch(`${this.API_URL}/users/${id}/role`, request);
+  changeRole(id: number, request: ChangeRoleRequest): Observable<User> {
+    return this.http.patch<User>(`/admin/users/${id}/role`, request);
   }
 
   // Desactivar usuario
-  deactivateUser(id: number): Observable<any> {
-    return this.http.patch(`${this.API_URL}/users/${id}/deactivate`, {});
+  deactivateUser(id: number): Observable<User> {
+    return this.http.patch<User>(`/admin/users/${id}/deactivate`, {});
   }
 
   // Activar usuario
-  activateUser(id: number): Observable<any> {
-    return this.http.patch(`${this.API_URL}/users/${id}/activate`, {});
+  activateUser(id: number): Observable<User> {
+    return this.http.patch<User>(`/admin/users/${id}/activate`, {});
   }
 }

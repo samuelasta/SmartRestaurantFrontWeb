@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuditService } from '../../services/audit.service';
+import { AuditService, PageResponse } from '../../services/audit.service';
 import { AuditLogResponse } from '../../models/audit-log.model';
 import { AuditEventType } from '../../models/audit-event-type.enum';
 import { NotificationService } from '@core/services/notification.service';
@@ -15,6 +15,8 @@ export class AuditLogsComponent implements OnInit {
   loading = false;
   currentPage = 0;
   pageSize = 20;
+  totalPages = 0;
+  totalElements = 0;
   
   viewType: 'all' | 'failed' | 'critical' | 'byEventType' | 'byDateRange' = 'all';
   selectedEventType: AuditEventType | null = null;
@@ -83,24 +85,18 @@ export class AuditLogsComponent implements OnInit {
     }
 
     request.subscribe({
-      next: (response) => {
-        if (!response.error) {
-          const data = response.message;
-          // Si es paginado (Page<T>)
-          if (data.content) {
-            this.logs = data.content as AuditLogResponse[];
-          } else if (Array.isArray(data)) {
-            this.logs = data as AuditLogResponse[];
-          } else {
-            this.logs = [];
-          }
-        }
+      next: (pageResponse: PageResponse<AuditLogResponse>) => {
+        console.log('✅ Logs cargados:', pageResponse);
+        // PageResponse de Spring tiene la estructura: { content: [], totalPages, totalElements, ... }
+        this.logs = pageResponse.content;
+        this.totalPages = pageResponse.totalPages;
+        this.totalElements = pageResponse.totalElements;
         this.loading = false;
       },
       error: (err) => {
         console.error('❌ Error al cargar logs:', err);
         this.loading = false;
-        this.notificationService.showError('Error al cargar los logs de auditoría');
+        // El error ya es manejado por el interceptor
       }
     });
   }
@@ -114,8 +110,10 @@ export class AuditLogsComponent implements OnInit {
   }
 
   nextPage(): void {
-    this.currentPage++;
-    this.loadLogs();
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadLogs();
+    }
   }
 
   previousPage(): void {
@@ -123,6 +121,14 @@ export class AuditLogsComponent implements OnInit {
       this.currentPage--;
       this.loadLogs();
     }
+  }
+
+  hasNextPage(): boolean {
+    return this.currentPage < this.totalPages - 1;
+  }
+
+  hasPreviousPage(): boolean {
+    return this.currentPage > 0;
   }
 
   getEventBadgeClass(eventType: AuditEventType): string {

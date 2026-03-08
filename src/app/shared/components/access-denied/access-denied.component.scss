@@ -1,0 +1,134 @@
+@import 'styles/variables';
+
+.access-denied-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.access-denied-card {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: $spacing-xl;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.icon-container {
+  margin-bottom: $spacing-lg;
+
+  .lock-icon {
+    font-size: 5rem;
+    animation: shake 0.5s ease-in-out;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+h1 {
+  font-size: 2rem;
+  color: #e74c3c;
+  margin: 0 0 $spacing-sm 0;
+}
+
+h2 {
+  font-size: 1.25rem;
+  color: $text-color;
+  font-weight: 400;
+  margin: 0 0 $spacing-lg 0;
+}
+
+.info-box {
+  background-color: #f8f9fa;
+  border-left: 4px solid #667eea;
+  padding: $spacing-md;
+  border-radius: $border-radius-sm;
+  margin: $spacing-lg 0;
+  text-align: left;
+
+  p {
+    margin: $spacing-xs 0;
+    color: $text-color;
+
+    strong {
+      color: #667eea;
+    }
+  }
+}
+
+.description {
+  color: $text-light;
+  line-height: 1.6;
+  margin: $spacing-lg 0;
+}
+
+.actions {
+  margin: $spacing-xl 0;
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: $spacing-sm $spacing-xl;
+    border-radius: $border-radius-md;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.contact-info {
+  background-color: #e3f2fd;
+  border-radius: $border-radius-sm;
+  padding: $spacing-md;
+  margin-top: $spacing-lg;
+
+  .contact-title {
+    font-weight: 600;
+    color: #1565c0;
+    margin: 0 0 $spacing-xs 0;
+  }
+
+  p {
+    color: #1976d2;
+    margin: $spacing-xs 0;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .access-denied-card {
+    padding: $spacing-md;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1rem;
+  }
+
+  .icon-container .lock-icon {
+    font-size: 4rem;
+  }
+}

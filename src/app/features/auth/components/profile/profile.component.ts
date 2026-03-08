@@ -39,9 +39,9 @@ export class ProfileComponent implements OnInit {
   loadUserProfile(): void {
     this.loading = true;
     this.authService.getCurrentUser().subscribe({
-      next: (response) => {
-        if (!response.error && response.message) {
-          this.user = response.message as User;
+      next: (user) => {
+        this.user = user;
+        if (this.user) {
           this.profileForm.patchValue({
             firstName: this.user.firstName,
             lastName: this.user.lastName,

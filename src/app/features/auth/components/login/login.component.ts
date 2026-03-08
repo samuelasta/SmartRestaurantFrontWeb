@@ -119,19 +119,64 @@ export class LoginComponent implements OnInit {
   }
 
   handleSuccessfulLogin(response: any): void {
-    // Guardar tokens
+    // Guardar tokens PRIMERO
     this.storageService.setToken(response.accessToken);
     this.storageService.setRefreshToken(response.refreshToken);
+    
+    // Decodificar el token JWT para obtener el rol
+    const tokenPayload = this.decodeToken(response.accessToken);
+    const userRole = tokenPayload?.role || UserRole.CUSTOMER;
     
     this.notificationService.showSuccess('Inicio de sesión exitoso');
     this.loading = false;
     
-    // Redirigir directamente sin llamar a /auth/me
-    if (this.returnUrl) {
-      this.router.navigateByUrl(this.returnUrl);
-    } else {
-      // Redirigir al dashboard por defecto
-      this.router.navigate(['/dashboard']);
+    // Pequeño delay para asegurar que el token se guardó
+    setTimeout(() => {
+      // Obtener información completa del usuario desde el backend
+      this.authService.getCurrentUser().subscribe({
+        next: (userInfo) => {
+          // Guardar información completa del usuario
+          this.storageService.setUser(userInfo);
+          
+          // Redirigir según el rol del usuario
+          if (this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            // Usar RoleRedirectService para redirigir según el rol
+            this.roleRedirectService.redirectByRole(userRole, response.requiresPasswordChange || false);
+          }
+        },
+        error: (err) => {
+          console.error('Error al obtener información del usuario:', err);
+          // Si falla, guardar información básica del token
+          this.storageService.setUser({
+            email: tokenPayload?.sub || this.loginForm.value.email,
+            role: userRole,
+            permissions: tokenPayload?.permissions || []
+          });
+          
+          // Redirigir de todas formas
+          if (this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.roleRedirectService.redirectByRole(userRole, response.requiresPasswordChange || false);
+          }
+        }
+      });
+    }, 100); // 100ms de delay
+  }
+
+  /**
+   * Decodifica un token JWT
+   */
+  private decodeToken(token: string): any {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload);
+      return JSON.parse(decoded);
+    } catch (error) {
+      console.error('Error decodificando token:', error);
+      return null;
     }
   }
 

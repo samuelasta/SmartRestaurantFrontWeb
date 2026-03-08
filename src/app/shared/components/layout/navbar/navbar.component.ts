@@ -33,12 +33,10 @@ export class NavbarComponent implements OnInit {
 
   loadCurrentUser(): void {
     this.authService.getCurrentUser().subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.user = response.message as User;
-          // Actualizar en storage
-          this.storageService.setUser(this.user);
-        }
+      next: (user) => {
+        this.user = user;
+        // Actualizar en storage
+        this.storageService.setUser(this.user);
       },
       error: (err) => {
         // Si es 401, el token expiró o no es válido - limpiar storage silenciosamente

@@ -12,10 +12,10 @@ export class RoleRedirectService {
 
   // Mapeo de roles a rutas de dashboard
   private readonly ROLE_ROUTES: Record<UserRole, string> = {
-    [UserRole.ADMIN]: '/inventory',
-    [UserRole.KITCHEN]: '/inventory',
-    [UserRole.WAITER]: '/inventory',
-    [UserRole.CUSTOMER]: '/inventory'
+    [UserRole.ADMIN]: '/inventory/dashboard',
+    [UserRole.KITCHEN]: '/inventory/dashboard',
+    [UserRole.WAITER]: '/inventory/dashboard',
+    [UserRole.CUSTOMER]: '/customer/home'
   };
 
   constructor(private router: Router) {}
@@ -27,7 +27,7 @@ export class RoleRedirectService {
     // Si requiere cambio de contraseña, redirigir primero a cambio de contraseña
     if (requiresPasswordChange) {
       this.router.navigate(['/auth/change-password'], {
-        queryParams: { forced: true }
+        queryParams: { forced: 'true' }
       });
       return;
     }

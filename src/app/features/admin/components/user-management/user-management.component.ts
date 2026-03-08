@@ -17,6 +17,11 @@ export class UserManagementComponent implements OnInit {
   isModalOpen = false;
   selectedUserId: number | null = null;
   
+  // Modal de cambio de rol
+  isRoleModalOpen = false;
+  selectedUserForRoleChange: User | null = null;
+  newRole: UserRole | null = null;
+  
   // Filtros
   selectedRole: UserRole | null = null;
   selectedStatus: UserStatus | null = null;
@@ -52,16 +57,15 @@ export class UserManagementComponent implements OnInit {
   loadUsers(): void {
     this.loading = true;
     this.adminService.getUsers(this.selectedRole || undefined, this.selectedStatus || undefined).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.users = response.message as User[];
-        }
+      next: (users: User[]) => {
+        console.log('✅ Usuarios cargados:', users);
+        this.users = users;
         this.loading = false;
       },
       error: (err) => {
         console.error('❌ Error al cargar usuarios:', err);
         this.loading = false;
-        this.notificationService.showError('Error al cargar los usuarios');
+        // El error ya es manejado por el interceptor
       }
     });
   }
@@ -92,16 +96,13 @@ export class UserManagementComponent implements OnInit {
   deactivateUser(id: number): void {
     if (confirm('¿Está seguro de desactivar este usuario?')) {
       this.adminService.deactivateUser(id).subscribe({
-        next: (response) => {
-          if (!response.error) {
-            this.notificationService.showSuccess('Usuario desactivado exitosamente');
-            this.loadUsers();
-          } else {
-            this.notificationService.showError(response.message as string);
-          }
+        next: (user: User) => {
+          console.log('✅ Usuario desactivado:', user);
+          this.notificationService.showSuccess('Usuario desactivado exitosamente');
+          this.loadUsers();
         },
         error: () => {
-          this.notificationService.showError('Error al desactivar el usuario');
+          // El error ya es manejado por el interceptor
         }
       });
     }
@@ -110,19 +111,56 @@ export class UserManagementComponent implements OnInit {
   activateUser(id: number): void {
     if (confirm('¿Está seguro de activar este usuario?')) {
       this.adminService.activateUser(id).subscribe({
-        next: (response) => {
-          if (!response.error) {
-            this.notificationService.showSuccess('Usuario activado exitosamente');
-            this.loadUsers();
-          } else {
-            this.notificationService.showError(response.message as string);
-          }
+        next: (user: User) => {
+          console.log('✅ Usuario activado:', user);
+          this.notificationService.showSuccess('Usuario activado exitosamente');
+          this.loadUsers();
         },
         error: () => {
-          this.notificationService.showError('Error al activar el usuario');
+          // El error ya es manejado por el interceptor
         }
       });
     }
+  }
+
+  openRoleModal(user: User): void {
+    this.selectedUserForRoleChange = user;
+    this.newRole = user.role; // Inicializar con el rol actual
+    this.isRoleModalOpen = true;
+  }
+
+  closeRoleModal(): void {
+    this.isRoleModalOpen = false;
+    this.selectedUserForRoleChange = null;
+    this.newRole = null;
+  }
+
+  changeUserRole(): void {
+    if (!this.selectedUserForRoleChange || !this.newRole) {
+      return;
+    }
+
+    if (this.newRole === this.selectedUserForRoleChange.role) {
+      this.notificationService.showWarning('El usuario ya tiene ese rol');
+      return;
+    }
+
+    this.adminService.changeRole(this.selectedUserForRoleChange.id, { role: this.newRole }).subscribe({
+      next: (user: User) => {
+        console.log('✅ Rol cambiado:', user);
+        this.notificationService.showSuccess(`Rol cambiado exitosamente a ${this.getRoleLabel(this.newRole!)}`);
+        this.closeRoleModal();
+        this.loadUsers();
+      },
+      error: () => {
+        // El error ya es manejado por el interceptor
+      }
+    });
+  }
+
+  getRoleLabel(role: UserRole): string {
+    const roleObj = this.roles.find(r => r.value === role);
+    return roleObj ? roleObj.label : role;
   }
 
   onRoleFilterChange(): void {

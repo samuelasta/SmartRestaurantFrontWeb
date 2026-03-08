@@ -50,7 +50,9 @@ export class RegisterComponent implements OnInit {
       
       this.authService.register(registerData).subscribe({
         next: (message) => {
+          this.loading = false;
           this.notificationService.showSuccess(message || 'Registro exitoso. Por favor verifica tu correo.');
+          this.registerForm.reset();
           this.router.navigate(['/auth/verify-account'], {
             queryParams: { email: registerData.email }
           });
@@ -64,6 +66,7 @@ export class RegisterComponent implements OnInit {
       Object.keys(this.registerForm.controls).forEach(key => {
         this.registerForm.get(key)?.markAsTouched();
       });
+      this.notificationService.showWarning('Por favor complete todos los campos correctamente');
     }
   }
 

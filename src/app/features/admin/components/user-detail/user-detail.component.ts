@@ -38,16 +38,15 @@ export class UserDetailComponent implements OnInit {
   loadUser(id: number): void {
     this.loading = true;
     this.adminService.getUserById(id).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.user = response.message as User;
-        }
+      next: (user: User) => {
+        console.log('✅ Usuario cargado:', user);
+        this.user = user;
         this.loading = false;
       },
       error: (err) => {
         console.error('❌ Error al cargar usuario:', err);
         this.loading = false;
-        this.notificationService.showError('Error al cargar el usuario');
+        // El error ya es manejado por el interceptor
         this.goBack();
       }
     });
@@ -56,15 +55,15 @@ export class UserDetailComponent implements OnInit {
   loadRecentLogs(userId: number): void {
     this.logsLoading = true;
     this.auditService.getRecentLogsByUser(userId).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.recentLogs = response.message as AuditLogResponse[];
-        }
+      next: (logs: AuditLogResponse[]) => {
+        console.log('✅ Logs cargados:', logs);
+        this.recentLogs = logs;
         this.logsLoading = false;
       },
       error: (err) => {
         console.error('❌ Error al cargar logs:', err);
         this.logsLoading = false;
+        // El error ya es manejado por el interceptor
       }
     });
   }
@@ -74,16 +73,13 @@ export class UserDetailComponent implements OnInit {
     
     if (confirm('¿Está seguro de desactivar este usuario?')) {
       this.adminService.deactivateUser(this.user.id).subscribe({
-        next: (response) => {
-          if (!response.error) {
-            this.notificationService.showSuccess('Usuario desactivado exitosamente');
-            this.loadUser(this.user!.id);
-          } else {
-            this.notificationService.showError(response.message as string);
-          }
+        next: (user: User) => {
+          console.log('✅ Usuario desactivado:', user);
+          this.notificationService.showSuccess('Usuario desactivado exitosamente');
+          this.loadUser(this.user!.id);
         },
         error: () => {
-          this.notificationService.showError('Error al desactivar el usuario');
+          // El error ya es manejado por el interceptor
         }
       });
     }
@@ -94,16 +90,13 @@ export class UserDetailComponent implements OnInit {
     
     if (confirm('¿Está seguro de activar este usuario?')) {
       this.adminService.activateUser(this.user.id).subscribe({
-        next: (response) => {
-          if (!response.error) {
-            this.notificationService.showSuccess('Usuario activado exitosamente');
-            this.loadUser(this.user!.id);
-          } else {
-            this.notificationService.showError(response.message as string);
-          }
+        next: (user: User) => {
+          console.log('✅ Usuario activado:', user);
+          this.notificationService.showSuccess('Usuario activado exitosamente');
+          this.loadUser(this.user!.id);
         },
         error: () => {
-          this.notificationService.showError('Error al activar el usuario');
+          // El error ya es manejado por el interceptor
         }
       });
     }

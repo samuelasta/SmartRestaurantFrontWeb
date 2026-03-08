@@ -65,21 +65,20 @@ export class UserFormModalComponent implements OnInit {
   loadUser(id: number): void {
     this.loading = true;
     this.adminService.getUserById(id).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.currentUser = response.message as User;
-          this.userForm.patchValue({
-            firstName: this.currentUser.firstName,
-            lastName: this.currentUser.lastName,
-            newRole: this.currentUser.role
-          });
-        }
+      next: (user: User) => {
+        console.log('✅ Usuario cargado:', user);
+        this.currentUser = user;
+        this.userForm.patchValue({
+          firstName: this.currentUser.firstName,
+          lastName: this.currentUser.lastName,
+          newRole: this.currentUser.role
+        });
         this.loading = false;
       },
       error: (err) => {
         console.error('❌ Error al cargar usuario:', err);
         this.loading = false;
-        this.notificationService.showError('Error al cargar el usuario');
+        // El error ya es manejado por el interceptor
         this.onClose();
       }
     });
@@ -108,21 +107,20 @@ export class UserFormModalComponent implements OnInit {
       role: this.userForm.value.role as UserRole
     };
 
+    console.log('📤 Enviando petición de registro:', request);
+
     this.adminService.registerEmployee(request).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.notificationService.showSuccess('Empleado registrado exitosamente');
-          this.saved.emit();
-          this.onClose();
-        } else {
-          this.notificationService.showError(response.message as string);
-        }
+      next: (response: string) => {
+        console.log('✅ Respuesta del servidor:', response);
+        this.notificationService.showSuccess(response);
+        this.saved.emit();
+        this.onClose();
         this.loading = false;
       },
       error: (err) => {
-        console.error('❌ Error al registrar empleado:', err);
+        console.error('❌ Error al registrar usuario:', err);
         this.loading = false;
-        this.notificationService.showError('Error al registrar el empleado');
+        // El error ya es manejado por el interceptor
       }
     });
   }
@@ -136,27 +134,24 @@ export class UserFormModalComponent implements OnInit {
     };
 
     this.adminService.updateUser(this.userId, updateRequest).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          // Si el rol cambió, actualizar el rol
-          const newRole = this.userForm.value.newRole;
-          if (newRole && newRole !== this.currentUser!.role) {
-            this.changeUserRole(this.userId!, newRole);
-          } else {
-            this.notificationService.showSuccess('Usuario actualizado exitosamente');
-            this.saved.emit();
-            this.onClose();
-            this.loading = false;
-          }
+      next: (user: User) => {
+        console.log('✅ Usuario actualizado:', user);
+        
+        // Si el rol cambió, actualizar el rol
+        const newRole = this.userForm.value.newRole;
+        if (newRole && newRole !== this.currentUser!.role) {
+          this.changeUserRole(this.userId!, newRole);
         } else {
-          this.notificationService.showError(response.message as string);
+          this.notificationService.showSuccess('Usuario actualizado exitosamente');
+          this.saved.emit();
+          this.onClose();
           this.loading = false;
         }
       },
       error: (err) => {
         console.error('❌ Error al actualizar usuario:', err);
         this.loading = false;
-        this.notificationService.showError('Error al actualizar el usuario');
+        // El error ya es manejado por el interceptor
       }
     });
   }
@@ -165,20 +160,17 @@ export class UserFormModalComponent implements OnInit {
     const roleRequest: ChangeRoleRequest = { role: newRole };
 
     this.adminService.changeRole(userId, roleRequest).subscribe({
-      next: (response) => {
-        if (!response.error) {
-          this.notificationService.showSuccess('Usuario y rol actualizados exitosamente');
-          this.saved.emit();
-          this.onClose();
-        } else {
-          this.notificationService.showError(response.message as string);
-        }
+      next: (user: User) => {
+        console.log('✅ Rol actualizado:', user);
+        this.notificationService.showSuccess('Usuario y rol actualizados exitosamente');
+        this.saved.emit();
+        this.onClose();
         this.loading = false;
       },
       error: (err) => {
         console.error('❌ Error al cambiar rol:', err);
         this.loading = false;
-        this.notificationService.showError('Error al cambiar el rol');
+        // El error ya es manejado por el interceptor
       }
     });
   }

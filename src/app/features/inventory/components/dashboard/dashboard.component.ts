@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StorageService } from '@core/services/storage.service';
+import { PermissionService } from '@core/services/permission.service';
 import { UserRole } from '@features/auth/models/user-role.enum';
 
 interface DashboardCard {
@@ -9,7 +10,7 @@ interface DashboardCard {
   icon: string;
   route: string;
   color: string;
-  roles: UserRole[];
+  permission: string; // Permiso requerido para ver la tarjeta
 }
 
 @Component({
@@ -20,8 +21,9 @@ interface DashboardCard {
 export class DashboardComponent implements OnInit {
   userRole: string = '';
   userName: string = '';
+  userEmail: string = '';
 
-  // Tarjetas del dashboard
+  // Tarjetas del dashboard con permisos
   dashboardCards: DashboardCard[] = [
     {
       title: 'Inventario',
@@ -29,7 +31,7 @@ export class DashboardComponent implements OnInit {
       icon: '📦',
       route: '/inventory/list',
       color: '#3498db',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'inventory:read'
     },
     {
       title: 'Proveedores',
@@ -37,7 +39,7 @@ export class DashboardComponent implements OnInit {
       icon: '🚚',
       route: '/inventory/suppliers',
       color: '#9b59b6',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'supplier:read'
     },
     {
       title: 'Platos',
@@ -45,7 +47,7 @@ export class DashboardComponent implements OnInit {
       icon: '🍝',
       route: '/inventory/dishes',
       color: '#e67e22',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'dish:read'
     },
     {
       title: 'Bebidas',
@@ -53,7 +55,7 @@ export class DashboardComponent implements OnInit {
       icon: '🥤',
       route: '/inventory/drinks',
       color: '#1abc9c',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'drink:read'
     },
     {
       title: 'Adiciones',
@@ -61,7 +63,7 @@ export class DashboardComponent implements OnInit {
       icon: '➕',
       route: '/inventory/additions',
       color: '#e74c3c',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'addition:read'
     },
     {
       title: 'Menú del Día',
@@ -69,7 +71,7 @@ export class DashboardComponent implements OnInit {
       icon: '🍽️',
       route: '/inventory/daily-menu',
       color: '#8e44ad',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN, UserRole.WAITER]
+      permission: 'daily_menu:read'
     },
     {
       title: 'Categorías',
@@ -77,7 +79,7 @@ export class DashboardComponent implements OnInit {
       icon: '📁',
       route: '/inventory/categories',
       color: '#f39c12',
-      roles: [UserRole.ADMIN]
+      permission: 'category:read'
     },
     {
       title: 'Alertas de Stock',
@@ -85,7 +87,7 @@ export class DashboardComponent implements OnInit {
       icon: '⚠️',
       route: '/inventory/alerts',
       color: '#c0392b',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN, UserRole.WAITER]
+      permission: 'stock_alert:read'
     },
     {
       title: 'Movimientos de Inventario',
@@ -93,7 +95,7 @@ export class DashboardComponent implements OnInit {
       icon: '📊',
       route: '/inventory/movements',
       color: '#16a085',
-      roles: [UserRole.ADMIN, UserRole.KITCHEN]
+      permission: 'inventory_movement:read'
     },
     {
       title: 'Gestión de Usuarios',
@@ -101,7 +103,7 @@ export class DashboardComponent implements OnInit {
       icon: '👥',
       route: '/admin/users',
       color: '#2c3e50',
-      roles: [UserRole.ADMIN]
+      permission: 'user:read'
     },
     {
       title: 'Auditoría de Seguridad',
@@ -109,19 +111,26 @@ export class DashboardComponent implements OnInit {
       icon: '🛡️',
       route: '/admin/audit-logs',
       color: '#34495e',
-      roles: [UserRole.ADMIN]
+      permission: 'audit:read'
     }
   ];
 
   constructor(
     private router: Router,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
     this.userRole = this.storageService.getUserRole();
     const user = this.storageService.getUser();
     this.userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email : 'Usuario';
+    this.userEmail = user?.email || '';
+
+    // Si es cliente, redirigir a vista de cliente
+    if (this.permissionService.isCustomer()) {
+      this.router.navigate(['/customer/home']);
+    }
   }
 
   getRoleDisplayName(role: string): string {
@@ -135,15 +144,20 @@ export class DashboardComponent implements OnInit {
   }
 
   getVisibleCards(): DashboardCard[] {
-    // Si no hay rol definido, mostrar todas las tarjetas (para testing)
-    if (!this.userRole) {
-      console.warn('No user role found, showing all cards for testing');
-      return this.dashboardCards;
-    }
-    return this.dashboardCards.filter(card => card.roles.includes(this.userRole as UserRole));
+    return this.dashboardCards.filter(card => 
+      this.permissionService.hasPermission(card.permission)
+    );
   }
 
   navigateTo(route: string): void {
     this.router.navigate([route]);
+  }
+
+  canWrite(module: string): boolean {
+    return this.permissionService.canWrite(module);
+  }
+
+  isReadOnly(): boolean {
+    return this.userRole === UserRole.WAITER;
   }
 }

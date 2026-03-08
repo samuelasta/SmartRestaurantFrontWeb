@@ -1,11 +1,18 @@
 <div class="dashboard-container">
   <div class="dashboard-header">
     <h1>Bienvenido, {{ userName }}</h1>
-    <p class="role-badge">{{ getRoleDisplayName(userRole) }}</p>
+    <div class="header-info">
+      <p class="role-badge">{{ getRoleDisplayName(userRole) }}</p>
+      <p class="user-email">{{ userEmail }}</p>
+      <p *ngIf="isReadOnly()" class="read-only-badge">👁️ Solo Lectura</p>
+    </div>
   </div>
 
   <div class="dashboard-subtitle">
     <h2>Selecciona una sección para comenzar</h2>
+    <p *ngIf="isReadOnly()" class="read-only-notice">
+      ℹ️ Tu rol tiene permisos de solo lectura. Puedes consultar información pero no realizar cambios.
+    </p>
   </div>
 
   <div class="dashboard-grid">
@@ -24,7 +31,9 @@
   </div>
 
   <div *ngIf="getVisibleCards().length === 0" class="no-access">
-    <p>No tienes acceso a ninguna sección del sistema.</p>
+    <div class="no-access-icon">🔒</div>
+    <h3>Sin Acceso</h3>
+    <p>No tienes acceso a ninguna sección del sistema administrativo.</p>
     <p>Contacta al administrador para más información.</p>
   </div>
 </div>

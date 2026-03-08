@@ -36,8 +36,8 @@
           <i class="fas fa-user"></i>
         </div>
         <div class="user-details">
-          <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
-          <span class="user-role">{{ user.roleDisplayName }}</span>
+          <span class="user-name">{{ user.firstName || user.email }} {{ user.lastName || '' }}</span>
+          <span class="user-role">{{ user.roleDisplayName || user.role }}</span>
         </div>
         <i class="fas fa-chevron-down dropdown-icon" [class.rotated]="isDropdownOpen"></i>
       </div>
