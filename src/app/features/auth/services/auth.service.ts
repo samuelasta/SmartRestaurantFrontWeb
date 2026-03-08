@@ -12,6 +12,7 @@ import { ChangePasswordRequest } from '../models/change-password-request.model';
 import { SocialLoginRequest } from '../models/social-login-request.model';
 import { User } from '../models/user.model';
 import { RegisterEmployeeRequest } from '../models/register-employee-request.model';
+import { SocialAuthService } from './social-auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +21,9 @@ export class AuthService {
 
   constructor(
     private httpClient: HttpClientService,
-    private storageService: StorageService
-  ) {}
+    private storageService: StorageService,
+    private socialAuthService: SocialAuthService
+  ) { }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // AUTENTICACIÓN BÁSICA
@@ -61,6 +63,10 @@ export class AuthService {
    */
   logout(): Observable<string> {
     const refreshToken = this.storageService.getRefreshToken();
+
+    // Cerrar sesión social si existe
+    this.socialAuthService.signOut().subscribe();
+
     return this.httpClient.post<string>('/auth/logout', { refreshToken }, { responseType: 'text' as 'json' }).pipe(
       tap(() => {
         this.storageService.clearAll();
@@ -204,7 +210,7 @@ export class AuthService {
   private handleSuccessfulAuth(response: AuthResponse): void {
     this.storageService.setToken(response.accessToken);
     this.storageService.setRefreshToken(response.refreshToken);
-    
+
     // Guardar flags importantes
     if (response.requiresPasswordChange) {
       this.storageService.setItem('requiresPasswordChange', 'true');
