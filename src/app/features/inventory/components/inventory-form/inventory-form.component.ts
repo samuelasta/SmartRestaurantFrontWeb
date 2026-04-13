@@ -177,14 +177,12 @@ export class InventoryFormComponent implements OnInit {
     this.imageService.uploadImage(file).subscribe({
       next: (response) => {
         this.uploadingImage = false;
-        if (!response.error) {
-          const imageData = response.message as { url: string };
-          const imageUrl = imageData.url;
-          this.uploadedPhotos.push(imageUrl);
+        if (response.success && response.data) {
+          this.uploadedPhotos.push(response.data.url);
           this.productForm.patchValue({ photos: this.uploadedPhotos });
           this.notificationService.showSuccess('Imagen subida exitosamente');
         } else {
-          this.notificationService.showError('Error al subir la imagen');
+          this.notificationService.showError(response.message || 'Error al subir la imagen');
         }
       },
       error: () => {

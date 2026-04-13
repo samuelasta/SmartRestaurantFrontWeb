@@ -90,14 +90,13 @@ export class AdditionFormModalComponent implements OnInit, OnChanges {
   uploadImage(file: File): void {
     this.uploadingImage = true;
     this.imageService.uploadImage(file).subscribe({
-      next: (response) => {
+        next: (response) => {
         this.uploadingImage = false;
-        if (!response.error) {
-          const imageData = response.message as { url: string };
-          this.uploadedPhotos.push(imageData.url);
+        if (response.success && response.data) {
+          this.uploadedPhotos.push(response.data.url);
           this.notificationService.showSuccess('Imagen subida exitosamente');
         } else {
-          this.notificationService.showError('Error al subir la imagen');
+          this.notificationService.showError(response.message || 'Error al subir la imagen');
         }
       },
       error: () => {

@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
   apiUrl: 'http://44.195.31.1/api',
-  apiTimeout: 30000
+  apiTimeout: 30000,
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID'
 };
